@@ -511,7 +511,7 @@ calm,positive
 came,positive
 campaign,positive
 campaigns,positive
-can’t,negative
+canÂ’t,negative
 cancel,negative
 cancelled,negative
 cancelling,negative
@@ -1132,12 +1132,12 @@ document,positive
 documented,positive
 documents,positive
 dodgy,negative
-doesn’t,negative
+doesnÂ’t,negative
 dog,negative
 dogs,negative
 domestic,positive
 dominant,negative
-don’t,negative
+donÂ’t,negative
 donate,positive
 donated,positive
 donating,positive
@@ -3816,7 +3816,7 @@ without,negative
 woke,ambiguous
 woken,positive
 wolves,negative
-won’t,negative
+wonÂ’t,negative
 wonderful,positive
 won't,negative
 woodsharp,negative
