@@ -2030,7 +2030,7 @@ camouflaged,positive
 campaign,positive
 campaigning,negative
 campaigns,positive
-can’t,negative
+canÂ’t,negative
 canary,positive
 cancel,negative
 canceled,negative
@@ -4793,7 +4793,7 @@ dodging,negative
 dodgy,negative
 doer,positive
 does,positive
-doesn’t,negative
+doesnÂ’t,negative
 dog,negative
 dogged,ambiguous
 doggedly,ambiguous
@@ -4818,7 +4818,7 @@ domineer,negative
 domineering,negative
 dominion,negative
 don,positive
-don’t,negative
+donÂ’t,negative
 donate,positive
 donated,positive
 donating,positive
@@ -10027,7 +10027,7 @@ nadir,negative
 nag,negative
 nagging,negative
 naive,negative
-naïve,negative
+naÃ¯ve,negative
 naively,negative
 nameless,negative
 nano,negative
@@ -16387,7 +16387,7 @@ womanizer,negative
 womanizing,negative
 womb,positive
 won,positive
-won’t,negative
+wonÂ’t,negative
 wonder,positive
 wonderful,positive
 wonderfully,positive
