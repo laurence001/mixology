@@ -15,148 +15,215 @@ library(dplyr)
 
 ## Overview
 
-The `mixology` package provides two sentiment lexicons developed for opinion
-mining of Covid-19 Twitter data, plus helper functions for tokenisation,
-negation handling, and weighted scoring.
+The `mixology` package provides eight sentiment lexicons for comparative
+opinion mining, two of which were developed specifically for Covid-19
+crisis communication research. All lexicons share a common three-category
+polarity scheme — **positive**, **negative**, **ambiguous** — making
+cross-lexicon comparison straightforward.
 
-| Resource | Terms | Positive | Negative | Ambiguous |
-|---|---|---|---|---|
-| `mixology_covid_lexicon` | 4,166 | 1,953 (46.9%) | 1,924 (46.2%) | 289 (6.9%) |
-| `mixology_lexicon` | 16,528 | 5,716 (34.6%) | 9,655 (58.4%) | 1,157 (7.0%) |
+| Short name | Full name | Terms |
+|---|---|---|
+| `inquirer` | General Inquirer | 4,206 |
+| `subjectivity` | MPQA Subjectivity | 6,884 |
+| `bing` | Bing Liu | 6,783 |
+| `nrc` | NRC Emotion Lexicon | 6,456 |
+| `afinn` | AFINN | 2,477 |
+| `loughran` | Loughran-McDonald | 3,917 |
+| `covid` | Mixology Covid Lexicon | 4,166 |
+| `mixology` | Mixology Lexicon (merged) | 16,528 |
 
-## Basic usage
+---
 
-### 1. Access the lexicons
+## 1. Access lexicons
 
 ```{r}
-lex_covid <- get_lexicon("covid")
-head(lex_covid)
+# List all available lexicons
+mixology_lexicon_names()
 
-# Inspect high-weight terms (frequent in the reference corpus)
-lex_covid |>
-  filter(weight > 2.5) |>
-  arrange(desc(weight))
+# Retrieve any lexicon as a tibble
+bing <- get_lexicon("bing")
+head(bing)
+
+# The Mixology lexicons also include weight and freq_corpus
+covid <- get_lexicon("covid")
+head(covid)
+
+# High-weight terms (frequent in the reference corpus)
+covid |> filter(weight > 2.5) |> arrange(desc(weight)) |> head(10)
 ```
 
-### 2. Tokenise tweets
+---
+
+## 2. Tokenise text
 
 ```{r}
 tweets <- c(
   "The lockdown is terrible and completely unjustified",
   "The vaccine rollout has been excellent, great progress",
-  "I am not sure about the booster, it makes me nervous"
+  "I am not sure about the booster at all"
 )
 
 toks <- mixology_tokenize(tweets)
 head(toks)
 ```
 
-### 3. Basic sentiment scoring (unweighted, no negation)
+Add custom stop words (e.g. Twitter noise):
 
 ```{r}
-results <- mixology_sentiment(tweets, lexicon = "covid", weighted = FALSE)
-results
+toks_custom <- mixology_tokenize(tweets,
+  custom_stopwords = c("rt", "via", "amp"))
 ```
 
-### 4. Weighted scoring
+---
 
-Each token match is multiplied by the lexicon `weight` column
-(log-normalised corpus frequency, range 0.5–3.0). High-frequency
-domain terms like *lockdown* or *vaccine* contribute more to the score.
+## 3. Sentiment scoring
+
+### Basic (unweighted, no negation)
 
 ```{r}
-results_w <- mixology_sentiment(tweets, lexicon = "covid", weighted = TRUE)
-results_w
+mixology_sentiment(tweets, lexicon = "covid", weighted = FALSE)
 ```
 
-### 5. Negation-aware scoring
+### Weighted scoring
+
+Matches are multiplied by the `weight` column — high-frequency domain terms
+like *lockdown* or *vaccine* contribute more to the score.
 
 ```{r}
-results_neg <- mixology_sentiment(
-  tweets,
-  lexicon          = "covid",
-  weighted         = TRUE,
-  handle_negation  = TRUE,
-  negation_window  = 3
-)
-results_neg
+mixology_sentiment(tweets, lexicon = "covid", weighted = TRUE)
 ```
 
-Notice that "not sure" in tweet 3 reverses the ambiguous polarity of *sure*.
+### Negation-aware scoring
 
-### 6. Apply to a data frame
-
-```{r eval=FALSE}
-library(dplyr)
-
-corpus <- read.csv("your_corpus.csv")  # must have a 'text' column
-
-scores <- mixology_sentiment(
-  corpus$text,
+```{r}
+mixology_sentiment(tweets,
   lexicon         = "covid",
   weighted        = TRUE,
-  handle_negation = TRUE
+  handle_negation = TRUE,
+  negation_window = 3
 )
+```
+
+In tweet 3, *not sure* reverses the polarity of *sure* within the window.
+
+### Applying to a data frame
+
+```{r eval=FALSE}
+corpus <- read.csv("your_corpus.csv")  # needs a 'text' column
+
+scores <- mixology_sentiment(corpus$text, lexicon = "covid",
+  weighted = TRUE, handle_negation = TRUE)
 
 corpus <- bind_cols(corpus, scores |> select(-doc_id))
 ```
 
-## Working with the stop words and negations
+---
+
+## 4. Compare all lexicons
+
+### Corpus-level summary
 
 ```{r}
-# Inspect
-head(stop_words_en)
-negations_en
+compare_lexicons(tweets)
+```
 
-# Add custom stop words (e.g. Twitter-specific noise)
-toks_custom <- mixology_tokenize(
-  tweets,
-  custom_stopwords = c("rt", "via", "amp")
+The summary table shows, for each lexicon: number of terms, coverage,
+percentage of documents classified positive / negative / ambiguous, and
+mean net score. This is the main tool for comparative analysis.
+
+### Document-level results (long format)
+
+```{r}
+compare_lexicons(tweets,
+  lexicons = c("bing", "nrc", "covid", "mixology"),
+  summary  = FALSE
 )
 ```
 
-## Comparing the two lexicons
-
-```{r}
-r_covid <- mixology_sentiment(tweets, lexicon = "covid")
-r_full  <- mixology_sentiment(tweets, lexicon = "full")
-
-comparison <- bind_rows(
-  mutate(r_covid, lexicon = "Covid"),
-  mutate(r_full,  lexicon = "Full")
-) |>
-  select(doc_id, lexicon, coverage, score_net, polarity)
-
-comparison
-```
-
-## Notes on the weight column
-
-The `weight` column encodes the log-normalised frequency of each term in
-the Mixology political measures sub-corpus (n = 4,371 tweets):
-
-```
-weight = 0.5 + (log(freq + 1) / log(max_freq + 1)) * 2.5
-```
-
-- Terms **unseen** in the reference corpus receive `weight = 0.5`.
-- The **most frequent** term (*covid*, n = 2,015) receives `weight = 3.0`.
-- The scale is continuous and can be used as-is or re-scaled.
-
-If you want to weight by frequencies from **your own corpus**, you can
-recompute the column:
+### Visualise with ggplot2
 
 ```{r eval=FALSE}
-library(dplyr)
+library(ggplot2)
 
-# your_freq: a named numeric vector of token frequencies
-lex <- get_lexicon("covid")
+comp <- compare_lexicons(tweets)
+
+ggplot(comp, aes(x = reorder(lexicon_label, pct_negative),
+                 y = pct_negative)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(title = "% tweets classified negative by lexicon",
+       x = NULL, y = "%") +
+  theme_minimal()
+```
+
+---
+
+## 5. Coverage diagnostic
+
+Quick check of how many corpus tokens each lexicon matches — before
+running the full analysis:
+
+```{r}
+lexicon_coverage(tweets)
+```
+
+---
+
+## 6. Identify cross-lexicon conflicts
+
+Find terms that carry different polarities across lexicons:
+
+```{r}
+# Conflicts between the Covid lexicon and Bing
+conflicts <- lexicon_conflicts(c("covid", "bing"))
+head(conflicts, 15)
+```
+
+```{r eval=FALSE}
+# All eight lexicons — terms with 3+ distinct polarities
+lexicon_conflicts() |> filter(n_distinct >= 3)
+```
+
+These conflicts are informative: they reveal where domain-specific
+annotation (as in the Covid lexicon) diverges from general-purpose
+resources, and can guide further manual review.
+
+---
+
+## 7. Recompute weights from your own corpus
+
+The default weights are derived from the Mixology political measures
+sub-corpus (n = 4,371 tweets, Western Europe, December 2021). To adapt
+them to a different corpus:
+
+```{r eval=FALSE}
+# your_freq: a named integer vector (names = tokens, values = counts)
+# e.g. built with table() on your tokenised corpus
+
 max_f <- max(your_freq)
 
-lex <- lex |>
+lex <- get_lexicon("covid") |>
   mutate(
-    freq_corpus = as.integer(your_freq[word]),
-    freq_corpus = if_else(is.na(freq_corpus), 0L, freq_corpus),
-    weight = 0.5 + (log(freq_corpus + 1) / log(max_f + 1)) * 2.5
+    freq_corpus = coalesce(your_freq[word], 0L),
+    weight      = 0.5 + (log(freq_corpus + 1) / log(max_f + 1)) * 2.5
   )
 ```
+
+---
+
+## Notes on design choices
+
+**Ambiguity over neutrality.** Terms that can be positive or negative
+depending on context (e.g. *tested positive*, *government*, *restrictions*)
+are labelled `"ambiguous"` rather than excluded or forced into a binary.
+This is especially important for Covid-related discourse.
+
+**Near-balanced Covid lexicon.** Unlike general-purpose dictionaries —
+which typically contain a large surplus of negative terms — the Mixology
+Covid Lexicon has a near-equal distribution (46.9% positive, 46.2%
+negative). This reduces the systematic negative bias observed in general
+lexicons when applied to domain-specific corpora.
+
+**Unigram baseline.** All functions operate on unigrams by default.
+Negation handling adds a sliding-window approximation. Multi-word
+expressions and idiomatic usage are not addressed.
