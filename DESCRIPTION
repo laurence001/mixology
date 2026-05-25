@@ -29,6 +29,5 @@ Suggests:
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)
-LazyData: true
 URL: https://github.com/laurence001/mixology
 BugReports: https://github.com/laurence001/mixology/issues
