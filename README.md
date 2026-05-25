@@ -7,9 +7,7 @@
 <!-- badges: end -->
 
 **mixology** is an R package providing eight sentiment lexicons and helper
-functions for comparative opinion mining, developed as part of the
-[Mixology open research project](https://ohmybox.info) by
-[Laurence Dierickx](https://ohmybox.info). The project analyses public
+functions for comparative opinion mining. The project analyses public
 opinion expressed on Twitter during the Covid-19 crisis, focusing on Western
 European accounts (December 2021).
 
