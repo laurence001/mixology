@@ -1,0 +1,162 @@
+---
+title: "Getting started with mixology"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with mixology}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(mixology)
+library(dplyr)
+```
+
+## Overview
+
+The `mixology` package provides two sentiment lexicons developed for opinion
+mining of Covid-19 Twitter data, plus helper functions for tokenisation,
+negation handling, and weighted scoring.
+
+| Resource | Terms | Positive | Negative | Ambiguous |
+|---|---|---|---|---|
+| `mixology_covid_lexicon` | 4,166 | 1,953 (46.9%) | 1,924 (46.2%) | 289 (6.9%) |
+| `mixology_lexicon` | 16,528 | 5,716 (34.6%) | 9,655 (58.4%) | 1,157 (7.0%) |
+
+## Basic usage
+
+### 1. Access the lexicons
+
+```{r}
+lex_covid <- get_lexicon("covid")
+head(lex_covid)
+
+# Inspect high-weight terms (frequent in the reference corpus)
+lex_covid |>
+  filter(weight > 2.5) |>
+  arrange(desc(weight))
+```
+
+### 2. Tokenise tweets
+
+```{r}
+tweets <- c(
+  "The lockdown is terrible and completely unjustified",
+  "The vaccine rollout has been excellent, great progress",
+  "I am not sure about the booster, it makes me nervous"
+)
+
+toks <- mixology_tokenize(tweets)
+head(toks)
+```
+
+### 3. Basic sentiment scoring (unweighted, no negation)
+
+```{r}
+results <- mixology_sentiment(tweets, lexicon = "covid", weighted = FALSE)
+results
+```
+
+### 4. Weighted scoring
+
+Each token match is multiplied by the lexicon `weight` column
+(log-normalised corpus frequency, range 0.5–3.0). High-frequency
+domain terms like *lockdown* or *vaccine* contribute more to the score.
+
+```{r}
+results_w <- mixology_sentiment(tweets, lexicon = "covid", weighted = TRUE)
+results_w
+```
+
+### 5. Negation-aware scoring
+
+```{r}
+results_neg <- mixology_sentiment(
+  tweets,
+  lexicon          = "covid",
+  weighted         = TRUE,
+  handle_negation  = TRUE,
+  negation_window  = 3
+)
+results_neg
+```
+
+Notice that "not sure" in tweet 3 reverses the ambiguous polarity of *sure*.
+
+### 6. Apply to a data frame
+
+```{r eval=FALSE}
+library(dplyr)
+
+corpus <- read.csv("your_corpus.csv")  # must have a 'text' column
+
+scores <- mixology_sentiment(
+  corpus$text,
+  lexicon         = "covid",
+  weighted        = TRUE,
+  handle_negation = TRUE
+)
+
+corpus <- bind_cols(corpus, scores |> select(-doc_id))
+```
+
+## Working with the stop words and negations
+
+```{r}
+# Inspect
+head(stop_words_en)
+negations_en
+
+# Add custom stop words (e.g. Twitter-specific noise)
+toks_custom <- mixology_tokenize(
+  tweets,
+  custom_stopwords = c("rt", "via", "amp")
+)
+```
+
+## Comparing the two lexicons
+
+```{r}
+r_covid <- mixology_sentiment(tweets, lexicon = "covid")
+r_full  <- mixology_sentiment(tweets, lexicon = "full")
+
+comparison <- bind_rows(
+  mutate(r_covid, lexicon = "Covid"),
+  mutate(r_full,  lexicon = "Full")
+) |>
+  select(doc_id, lexicon, coverage, score_net, polarity)
+
+comparison
+```
+
+## Notes on the weight column
+
+The `weight` column encodes the log-normalised frequency of each term in
+the Mixology political measures sub-corpus (n = 4,371 tweets):
+
+```
+weight = 0.5 + (log(freq + 1) / log(max_freq + 1)) * 2.5
+```
+
+- Terms **unseen** in the reference corpus receive `weight = 0.5`.
+- The **most frequent** term (*covid*, n = 2,015) receives `weight = 3.0`.
+- The scale is continuous and can be used as-is or re-scaled.
+
+If you want to weight by frequencies from **your own corpus**, you can
+recompute the column:
+
+```{r eval=FALSE}
+library(dplyr)
+
+# your_freq: a named numeric vector of token frequencies
+lex <- get_lexicon("covid")
+max_f <- max(your_freq)
+
+lex <- lex |>
+  mutate(
+    freq_corpus = as.integer(your_freq[word]),
+    freq_corpus = if_else(is.na(freq_corpus), 0L, freq_corpus),
+    weight = 0.5 + (log(freq_corpus + 1) / log(max_f + 1)) * 2.5
+  )
+```
