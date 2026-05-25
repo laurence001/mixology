@@ -202,7 +202,7 @@ mixology/
 - Weights are derived from a **single sub-corpus** (political measures,
   Western Europe, December 2021) and may not transfer well to other domains
   or time periods.
-- The lexicons cover **English only**. French resources are in development.
+- The lexicons cover **English only**.
 
 ---
 
