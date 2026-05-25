@@ -1,14 +1,14 @@
-# Mixology
+# mixology <img src="man/figures/logo.png" align="right" height="139" alt="" />
 
-<img src="man/figures/logo.png" align="right" height="139" alt="" />
-
+<!-- badges: start -->
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![R version](https://img.shields.io/badge/R-%3E%3D4.0.0-blue.svg)](https://cran.r-project.org/)
 [![Project Status: Active](https://img.shields.io/badge/status-active-brightgreen.svg)](https://ohmybox.info)
 <!-- badges: end -->
 
 **mixology** is an R package providing domain-specific sentiment analysis
-lexicons and helper functions developed as part of a research project that analyses
+lexicons and helper functions developed as part of the
+[Mixology open research project](https://ohmybox.info). The project analyses
 public opinion expressed on Twitter during the Covid-19 crisis, with a focus
 on Western European accounts (December 2021).
 
@@ -202,14 +202,14 @@ mixology/
 - Weights are derived from a **single sub-corpus** (political measures,
   Western Europe, December 2021) and may not transfer well to other domains
   or time periods.
-- The lexicons cover **English only**.
+- The lexicons cover **English only**. French resources are in development.
 
 ---
 
 ## Contributing
 
 Corrections, additions, and feedback are welcome via
-[GitHub Issues](https://github.com/yourname/mixology/issues). If you
+[GitHub Issues](https://github.com/laurence001/mixology/issues). If you
 identify terms that are miscategorised or missing, please open an issue
 with the term, the suggested polarity, and a usage example from the corpus.
 
@@ -220,10 +220,11 @@ with the term, the suggested polarity, and a usage example from the corpus.
 If you use these resources in your research, please cite:
 
 ```bibtex
-@misc{dierickx2026mixology,
+@misc{dierickx2022mixology,
   author = {Dierickx, Laurence},
   title  = {Mixology: Sentiment Analysis Lexicons for Covid-19 Crisis Communication},
-  year   = {2026}
+  year   = {2022},
+  url    = {https://ohmybox.info}
 }
 ```
 

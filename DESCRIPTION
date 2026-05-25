@@ -1,0 +1,32 @@
+Package: mixology
+Title: Sentiment Analysis Lexicons and Tools for Covid-19 Crisis Communication
+Version: 0.1.0
+Authors@R: 
+    person("Laurence", "Dierickx", email = "hello@ohmybox.info", role = c("aut", "cre"))
+Description: Provides two manually annotated sentiment lexicons developed for
+    opinion mining of Twitter data during the Covid-19 crisis (December 2021,
+    Western Europe): the Mixology Covid Lexicon (4,166 terms) and the Mixology
+    Lexicon (16,528 terms, merged from six general-purpose dictionaries).
+    Also includes a custom English stop words list (350 terms) and a negation
+    markers list (22 terms). Provides helper functions for tokenisation,
+    negation-aware sentiment scoring, and weighted sentiment analysis.
+License: CC BY 4.0
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Depends:
+    R (>= 4.0.0)
+Imports:
+    dplyr (>= 1.0.0),
+    tidytext (>= 0.3.0),
+    stringr (>= 1.4.0),
+    tibble (>= 3.0.0),
+    rlang (>= 0.4.0)
+Suggests:
+    ggplot2,
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+LazyData: true
+URL: https://github.com/laurence001/mixology
+BugReports: https://github.com/laurence001/mixology/issues
