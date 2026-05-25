@@ -1,6 +1,6 @@
 # Mixology
 
-# mixology <img src="man/figures/logo.png" align="right" height="139" alt="" />
+# <img src="man/figures/logo.png" align="right" height="139" alt="" />
 
 <!-- badges: start -->
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
@@ -9,8 +9,7 @@
 <!-- badges: end -->
 
 **mixology** is an R package providing domain-specific sentiment analysis
-lexicons and helper functions developed as part of the
-[Mixology open research project](https://ohmybox.info). The project analyses
+lexicons and helper functions developed as part of a research project that analyses
 public opinion expressed on Twitter during the Covid-19 crisis, with a focus
 on Western European accounts (December 2021).
 
@@ -73,7 +72,7 @@ binarised, Loughran financial categories mapped to positive/negative/ambiguous).
 
 ```r
 # Install from GitHub:
-remotes::install_github("yourname/mixology")
+remotes::install_github("laurence001/mixology")
 
 # Or load locally during development:
 devtools::load_all("path/to/mixology")
@@ -222,10 +221,10 @@ with the term, the suggested polarity, and a usage example from the corpus.
 If you use these resources in your research, please cite:
 
 ```bibtex
-@misc{mixology2022,
+@misc{dierickx2026mixology,
+  author = {Dierickx, Laurence},
   title  = {Mixology: Sentiment Analysis Lexicons for Covid-19 Crisis Communication},
-  year   = {2022},
-  url    = {https://ohmybox.info}
+  year   = {2026}
 }
 ```
 
