@@ -166,10 +166,11 @@ mixology_negation <- function(tokens_tbl, window = 3L,
   docs <- split(tokens_tbl, tokens_tbl$doc_id)
   result <- lapply(docs, function(d) {
     toks    <- d$token
-    negated <- logical(length(toks))
+    n       <- length(toks)
+    negated <- logical(n)
     for (i in seq_along(toks)) {
-      if (toks[i] %in% neg_markers) {
-        idx <- seq(i + 1L, min(i + window, length(toks)))
+      if (toks[i] %in% neg_markers && i < n) {
+        idx <- seq(i + 1L, min(i + window, n))
         negated[idx] <- TRUE
       }
     }
