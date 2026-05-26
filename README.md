@@ -225,7 +225,7 @@ include the term, the suggested polarity, and a usage example from the corpus.
 @misc{dierickx2022mixology,
   author = {Dierickx, Laurence},
   title  = {Mixology: Sentiment Analysis Lexicons for Covid-19 Crisis Communication},
-  year   = {2022},
+  year   = {2022-2026},
   url    = {https://github.com/laurence001/mixology}
 }
 ```
