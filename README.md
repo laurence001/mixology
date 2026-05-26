@@ -34,7 +34,7 @@ harmonised from their original formats.
 | `mixology` | **Mixology Lexicon** | **16,528** | **5,716 (34.6%)** | **9,655 (58.4%)** | **1,157 (7.0%)** |
 
 The **Mixology Covid Lexicon** was built by manually reviewing 4,500 frequent
-tokens from the vaccination sub-corpus (311,882 English tweets, Western Europe,
+tokens from a corpus of 596,619 English tweets (Western Europe,
 December 2021), cross-referenced against the six general-purpose dictionaries
 using bigram and trigram context. The **Mixology Lexicon** merges all seven
 resources after manual conflict resolution.
@@ -188,8 +188,8 @@ follows before merging:
 - *MPQA*: neutral + both → ambiguous
 
 **Corpus weights.** The `weight` column (Mixology lexicons only) encodes
-log-normalised token frequency from the vaccination sub-corpus
-(n = 311,882 tweets, Western Europe, December 2021):
+log-normalised token frequency from the corpus of 596,619 English tweets
+(Western Europe, December 2021):
 
 ```
 weight = 0.5 + (log(freq + 1) / log(max_freq + 1)) × 2.5
