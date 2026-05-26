@@ -151,7 +151,55 @@ mixology/
 │   ├── stop_words_en_v3.csv
 │   └── negative_en.csv
 └── inst/
-    └── getting_started.Rmd         # Introductory vignette
+    ├── getting_started.Rmd         # Introductory vignette
+    ├── pipeline.R                  # Basic usage examples
+    ├── pipeline_300k.R             # Full pipeline for large corpora
+    ├── mixology_benchmark_viz.py   # 300 dpi benchmark figure (Python)
+    └── mixology_pipeline_schema.py # 300 dpi pipeline schema (Python)
+```
+
+---
+
+## R pipelines and Python figures
+
+Two ready-to-use R scripts are bundled with the package and can be opened directly from RStudio:
+
+```r
+# Basic usage and function examples
+file.edit(system.file("pipeline.R", package = "mixology"))
+
+# Full pipeline for large corpora (300k+ tweets), with:
+#   - chunk-based processing
+#   - Covid vs Mixology comparison
+#   - benchmark across all 8 lexicons
+#   - coverage-corrected inter-lexicon stability (simple and strict variants)
+#   - synthetic performance score
+file.edit(system.file("pipeline_300k.R", package = "mixology"))
+```
+
+Two Python scripts generate publication-ready figures at 300 dpi (PNG + PDF vector).
+They require only  () and contain hardcoded
+benchmark data — no external files needed. To update the figures with your own
+corpus results, replace the data constants at the top of each script.
+
+```r
+# Open from RStudio, then run with: python mixology_benchmark_viz.py
+file.edit(system.file("mixology_benchmark_viz.py", package = "mixology"))
+
+# Open from RStudio, then run with: python mixology_pipeline_schema.py
+file.edit(system.file("mixology_pipeline_schema.py", package = "mixology"))
+```
+
+Or copy the scripts to your working directory and run from the terminal:
+
+```r
+file.copy(system.file("mixology_benchmark_viz.py",   package = "mixology"), ".")
+file.copy(system.file("mixology_pipeline_schema.py", package = "mixology"), ".")
+```
+
+```bash
+python mixology_benchmark_viz.py    # → mixology_benchmark.png / .pdf
+python mixology_pipeline_schema.py  # → mixology_pipeline_schema.png / .pdf
 ```
 
 ---
