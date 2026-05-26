@@ -34,7 +34,7 @@ harmonised from their original formats.
 | `mixology` | **Mixology Lexicon** | **16,528** | **5,716 (34.6%)** | **9,655 (58.4%)** | **1,157 (7.0%)** |
 
 The **Mixology Covid Lexicon** was built by manually reviewing 4,500 frequent
-tokens from the vaccination sub-corpus (311,882 English tweets, Western Europe,
+tokens from the deduplicated corpus (596,619 English tweets, Western Europe,
 December 2021), cross-referenced against the six general-purpose dictionaries
 using bigram and trigram context. The **Mixology Lexicon** merges all seven
 resources after manual conflict resolution.
