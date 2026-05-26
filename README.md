@@ -31,14 +31,14 @@ harmonised from their original formats.
 | `covid` | **Mixology Covid Lexicon** | **4,166** | **1,953 (46.9%)** | **1,924 (46.2%)** | **289 (6.9%)** |
 | `mixology` | **Mixology Lexicon** | **16,528** | **5,716 (34.6%)** | **9,655 (58.4%)** | **1,157 (7.0%)** |
 
-The **Mixology Covid Lexicon** was built by manually reviewing 4,000 frequent
-tokens from a corpus of 311,882 English tweets about vaccination (Western
-Europe, December 2021), cross-referenced against the six general-purpose
+The **Mixology Covid Lexicon** was built by manually reviewing 4,500 frequent
+tokens from a corpus of 596,619 English tweets about vaccination (Western
+Europe, collected from 11 to 19 December 2021), cross-referenced against the six general-purpose
 dictionaries using bigram and trigram context. The **Mixology Lexicon** merges
 all seven resources after manual conflict resolution.
 
-Unlike general-purpose dictionaries — which carry a systematic surplus of
-negative terms — the Covid lexicon has a near-balanced distribution, reducing
+Unlike general-purpose dictionaries, which carry a systematic surplus of
+negative terms, the Covid lexicon has a near-balanced distribution, reducing
 the negative bias typically observed when applying off-the-shelf resources to
 domain-specific corpora.
 
@@ -151,9 +151,8 @@ mixology/
 └── inst/
     ├── getting_started.Rmd         # Introductory vignette
     ├── pipeline.R                  # Basic usage examples
-    ├── pipeline_300k.R             # Full pipeline for large corpora
-    ├── mixology_benchmark_viz.py   # 300 dpi benchmark figure (Python)
-    └── mixology_pipeline_schema.py # 300 dpi pipeline schema (Python)
+    └── pipeline_300k.R             # Full pipeline for large corpora
+
 ```
 
 ---
