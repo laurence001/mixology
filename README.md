@@ -7,9 +7,11 @@
 <!-- badges: end -->
 
 **mixology** is an R package providing eight sentiment lexicons and helper
-functions for comparative opinion mining. The project analyses public
-opinion expressed on Twitter during the Covid-19 crisis, focusing on Western
-European accounts (December 2021).
+functions for comparative opinion mining, developed as part of the
+[Mixology open research project](https://ohmybox.info) by
+[Laurence Dierickx](https://ohmybox.info). The project analyses public
+opinion expressed on Twitter during the Covid-19 crisis, focusing on
+Western European accounts (December 2021).
 
 ---
 
@@ -32,10 +34,10 @@ harmonised from their original formats.
 | `mixology` | **Mixology Lexicon** | **16,528** | **5,716 (34.6%)** | **9,655 (58.4%)** | **1,157 (7.0%)** |
 
 The **Mixology Covid Lexicon** was built by manually reviewing 4,500 frequent
-tokens from a corpus of 596,619 English tweets about vaccination (Western
-Europe, collected from 11 to 19 December 2021), cross-referenced against the six general-purpose
-dictionaries using bigram and trigram context. The **Mixology Lexicon** merges
-all seven resources after manual conflict resolution.
+tokens from the vaccination sub-corpus (311,882 English tweets, Western Europe,
+December 2021), cross-referenced against the six general-purpose dictionaries
+using bigram and trigram context. The **Mixology Lexicon** merges all seven
+resources after manual conflict resolution.
 
 Unlike general-purpose dictionaries, which carry a systematic surplus of
 negative terms, the Covid lexicon has a near-balanced distribution, reducing
@@ -48,13 +50,6 @@ domain-specific corpora.
 
 ```r
 remotes::install_github("laurence001/mixology")
-```
-
-**Step required after installation** — generate the `.rda` data files:
-
-```r
-# From the package root (once cloned locally):
-source("data-raw/prepare_data.R")
 ```
 
 **Dependencies:** dplyr, tidytext, stringr, tibble, rlang (all on CRAN).
@@ -133,11 +128,10 @@ mixology/
 ├── LICENSE
 ├── README.md
 ├── R/
-│   ├── data.R          # Roxygen documentation for all 10 datasets
-│   └── functions.R     # All exported functions
-├── data/               # .rda files (built by data-raw/prepare_data.R)
+│   ├── data.R              # Roxygen documentation for all 10 datasets
+│   └── functions.R         # All exported functions
 ├── data-raw/
-│   ├── prepare_data.R              # Run once to generate .rda
+│   ├── prepare_data.R      # Run once to generate .rds files
 │   ├── inquirer.csv
 │   ├── subjectivity.csv
 │   ├── bing.csv
@@ -149,17 +143,18 @@ mixology/
 │   ├── stop_words_en_v3.csv
 │   └── negative_en.csv
 └── inst/
-    ├── getting_started.Rmd         # Introductory vignette
-    ├── pipeline.R                  # Basic usage examples
-    └── pipeline_300k.R             # Full pipeline for large corpora
-
+    ├── data/               # .rds datasets (10 files, loaded at runtime)
+    ├── getting_started.Rmd # Introductory vignette
+    ├── pipeline.R          # Basic usage examples
+    └── pipeline_300k.R     # Full pipeline for large corpora
 ```
 
 ---
 
-## R pipelines and Python figures
+## R pipelines
 
-Two ready-to-use R scripts are bundled with the package and can be opened directly from RStudio:
+Two ready-to-use R scripts are bundled with the package and can be opened
+directly from RStudio:
 
 ```r
 # Basic usage and function examples
@@ -174,31 +169,6 @@ file.edit(system.file("pipeline.R", package = "mixology"))
 file.edit(system.file("pipeline_300k.R", package = "mixology"))
 ```
 
-Two Python scripts generate publication-ready figures at 300 dpi (PNG + PDF vector).
-They require only  () and contain hardcoded
-benchmark data — no external files needed. To update the figures with your own
-corpus results, replace the data constants at the top of each script.
-
-```r
-# Open from RStudio, then run with: python mixology_benchmark_viz.py
-file.edit(system.file("mixology_benchmark_viz.py", package = "mixology"))
-
-# Open from RStudio, then run with: python mixology_pipeline_schema.py
-file.edit(system.file("mixology_pipeline_schema.py", package = "mixology"))
-```
-
-Or copy the scripts to your working directory and run from the terminal:
-
-```r
-file.copy(system.file("mixology_benchmark_viz.py",   package = "mixology"), ".")
-file.copy(system.file("mixology_pipeline_schema.py", package = "mixology"), ".")
-```
-
-```bash
-python mixology_benchmark_viz.py    # → mixology_benchmark.png / .pdf
-python mixology_pipeline_schema.py  # → mixology_pipeline_schema.png / .pdf
-```
-
 ---
 
 ## Design notes
@@ -211,6 +181,7 @@ polarities are frequently reversed.
 
 **Harmonisation of general lexicons.** Original categories were mapped as
 follows before merging:
+
 - *AFINN*: scores binarised (positive / negative); 0 → ambiguous
 - *Loughran*: constraining + litigious → negative; uncertainty + superfluous → ambiguous
 - *NRC*: anger + fear + sadness + disgust → negative; anticipation + trust + joy → positive; surprise → ambiguous
@@ -254,7 +225,8 @@ include the term, the suggested polarity, and a usage example from the corpus.
 @misc{dierickx2022mixology,
   author = {Dierickx, Laurence},
   title  = {Mixology: Sentiment Analysis Lexicons for Covid-19 Crisis Communication},
-  year   = {2022-2026}
+  year   = {2022},
+  url    = {https://github.com/laurence001/mixology}
 }
 ```
 
