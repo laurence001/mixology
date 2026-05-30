@@ -1,7 +1,7 @@
 # ══════════════════════════════════════════════════════════════════════════════
 # Mixology — Full sentiment analysis pipeline
 # Corpus: English tweets, Western Europe, Dec. 2021
-# No ground truth — internal evaluation metrics only
+# No ground truth — internal evaluation metrics only ddd
 #
 # !! IMPORTANT: run this script top to bottom in a single session.
 #    Parts 2–5 depend on objects created in Part 1 (all_scores_long,
