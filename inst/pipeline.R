@@ -1,56 +1,56 @@
 # ══════════════════════════════════════════════════════════════════════════════
-# Mixology — Pipeline complet d'analyse de sentiment
-# Corpus : political measures sub-corpus (tweets en anglais, Europe occidentale)
+# Mixology — Full sentiment analysis pipeline
+# Corpus: political measures sub-corpus (English tweets, Western Europe)
 # ══════════════════════════════════════════════════════════════════════════════
 
 library(mixology)
 library(dplyr)
-library(ggplot2)   # pour les visualisations optionnelles
+library(ggplot2)   # for optional visualisations
 
 
-# ── 0. Chargement du corpus ───────────────────────────────────────────────────
+# ── 0. Load corpus ────────────────────────────────────────────────────────────
 
-df    <- sample_corpus_politics_en   # remplacer par read.csv("...") si besoin
+df    <- sample_corpus_politics_en   # replace with read.csv("...") if needed
 tweet <- df$text
 
 
-# ── 1. Lexiques disponibles ───────────────────────────────────────────────────
+# ── 1. Available lexicons ─────────────────────────────────────────────────────
 
 mixology_lexicon_names()
-# Accéder à un lexique directement :
+# Access a lexicon directly:
 # get_lexicon("covid")
 # get_lexicon("bing")
 
 
-# ── 2. Couverture token — diagnostic rapide ───────────────────────────────────
-# Combien de tokens du corpus chaque lexique reconnaît-il ?
+# ── 2. Token coverage — quick diagnostic ─────────────────────────────────────
+# How many corpus tokens does each lexicon recognise?
 
 coverage <- lexicon_coverage(tweet)
 print(coverage)
 
 
-# ── 3. Analyse de sentiment — un seul lexique ─────────────────────────────────
-# Retourne un tibble avec une ligne par tweet :
+# ── 3. Sentiment analysis — single lexicon ────────────────────────────────────
+# Returns a tibble with one row per tweet:
 # doc_id | n_tokens | n_matched | coverage | score_positive | score_negative
 # score_ambiguous | score_net | polarity
 
 scores_covid <- mixology_sentiment(
   tweet,
   lexicon         = "covid",   # "covid", "mixology", "bing", "nrc", etc.
-  weighted        = TRUE,       # pondération par fréquence corpus
-  handle_negation = TRUE,       # inverser la polarité après négation
-  negation_window = 3           # fenêtre de 3 tokens après le marqueur
+  weighted        = TRUE,       # corpus-frequency weighting
+  handle_negation = TRUE,       # reverse polarity after negation marker
+  negation_window = 3           # window of 3 tokens after the marker
 )
 
 head(scores_covid)
 table(scores_covid$polarity)
 
 
-# ── 4. Réattacher les scores au dataframe original ────────────────────────────
+# ── 4. Attach scores back to the original data frame ─────────────────────────
 
 df_scored <- bind_cols(df, scores_covid |> select(-doc_id))
 
-# Tweets négatifs avec forte couverture :
+# Negative tweets with high coverage:
 df_scored |>
   filter(polarity == "negative", coverage > 0.5) |>
   select(text, score_net, coverage) |>
@@ -58,14 +58,14 @@ df_scored |>
   head(10)
 
 
-# ── 5. Benchmark — tous les lexiques en parallèle ─────────────────────────────
-# summary = TRUE  -> une ligne par lexique, métriques agrégées (tableau benchmark)
-# summary = FALSE -> une ligne par tweet × lexique (format long, pour ggplot)
+# ── 5. Benchmark — all lexicons in parallel ───────────────────────────────────
+# summary = TRUE  -> one row per lexicon, aggregated metrics (benchmark table)
+# summary = FALSE -> one row per tweet × lexicon (long format, for ggplot)
 
 benchmark <- compare_lexicons(
   tweet,
   lexicons        = names(mixology_lexicon_names()),
-  weighted        = FALSE,   # FALSE pour comparaison équitable entre lexiques
+  weighted        = FALSE,   # FALSE for a fair cross-lexicon comparison
   handle_negation = TRUE,
   negation_window = 3,
   summary         = TRUE
@@ -74,7 +74,7 @@ benchmark <- compare_lexicons(
 print(benchmark)
 
 
-# ── 6. Résultats doc-level (format long) ─────────────────────────────────────
+# ── 6. Doc-level results (long format) ───────────────────────────────────────
 
 doc_results <- compare_lexicons(
   tweet,
@@ -84,7 +84,7 @@ doc_results <- compare_lexicons(
   summary         = FALSE
 )
 
-# Distribution des polarités par lexique :
+# Polarity distribution by lexicon:
 doc_results |>
   filter(n_matched > 0) |>
   count(lexicon_label, polarity) |>
@@ -93,13 +93,13 @@ doc_results |>
   arrange(lexicon_label, polarity)
 
 
-# ── 7. Conflits inter-lexiques ────────────────────────────────────────────────
-# Termes dont la polarité diffère selon les lexiques
+# ── 7. Cross-lexicon conflicts ────────────────────────────────────────────────
+# Terms whose polarity differs across lexicons
 
 conflicts_all <- lexicon_conflicts()
 head(conflicts_all, 20)
 
-# Conflits entre Covid et les lexiques généraux seulement :
+# Conflicts between Covid and general-purpose lexicons only:
 conflicts_covid <- lexicon_conflicts(
   lexicons     = c("covid", "bing", "nrc", "mixology"),
   min_conflict = 2
@@ -107,9 +107,9 @@ conflicts_covid <- lexicon_conflicts(
 head(conflicts_covid, 20)
 
 
-# ── 8. Visualisations ggplot2 ─────────────────────────────────────────────────
+# ── 8. ggplot2 visualisations ─────────────────────────────────────────────────
 
-# 8a. Couverture token par lexique
+# 8a. Token coverage by lexicon
 coverage |>
   mutate(lexicon_label = reorder(lexicon_label, coverage)) |>
   ggplot(aes(x = lexicon_label, y = coverage * 100)) +
@@ -124,7 +124,7 @@ coverage |>
   theme_minimal()
 
 
-# 8b. Distribution positive / négative par lexique (format long)
+# 8b. Positive / negative distribution by lexicon (long format)
 benchmark |>
   select(lexicon_label, pct_positive, pct_negative) |>
   tidyr::pivot_longer(
@@ -151,10 +151,10 @@ benchmark |>
   theme(legend.position = "top")
 
 
-# 8c. Negative bias (neg_tokens / pos_tokens) par lexique
+# 8c. Negative bias (neg_tokens / pos_tokens) by lexicon
 benchmark |>
   mutate(
-    neg_bias      = round(mean_score_net * -1, 2),  # proxy visuel
+    neg_bias      = round(mean_score_net * -1, 2),  # visual proxy
     lexicon_label = reorder(lexicon_label, -pct_negative / pct_positive)
   ) |>
   ggplot(aes(x = reorder(lexicon_label, pct_negative / ifelse(pct_positive == 0, 1, pct_positive)),
