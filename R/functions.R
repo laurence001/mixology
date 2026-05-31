@@ -53,19 +53,44 @@
 
 #' Retrieve a sentiment lexicon by name
 #'
-#' Convenience accessor for all lexicons bundled in the package. Returns a
-#' tibble with at least two columns: \code{word} and \code{sentiment}.
-#' The Mixology lexicons also include \code{weight} and \code{freq_corpus}.
+#' Convenience accessor for all eight sentiment lexicons bundled in the
+#' Mixology package. Returns a tibble with polarity assignments for each term.
+#' The two Mixology lexicons additionally include corpus frequency weights.
 #'
-#' @param lexicon Character. One of \code{"inquirer"}, \code{"subjectivity"},
-#'   \code{"bing"}, \code{"nrc"}, \code{"afinn"}, \code{"loughran"},
-#'   \code{"covid"} (Mixology Covid Lexicon), or
+#' @param lexicon Character. One of the eight lexicon keys returned by
+#'   \code{\link{mixology_lexicon_names}}: \code{"inquirer"},
+#'   \code{"subjectivity"}, \code{"bing"}, \code{"nrc"}, \code{"afinn"},
+#'   \code{"loughran"}, \code{"covid"} (Mixology Covid Lexicon), or
 #'   \code{"mixology"} (merged Mixology Lexicon).
 #'
-#' @return A tibble.
+#' @return A tibble. All lexicons include \code{word} (character) and
+#'   \code{sentiment} (one of \code{"positive"}, \code{"negative"}, or
+#'   \code{"ambiguous"}). The \code{"covid"} and \code{"mixology"} lexicons
+#'   additionally include:
+#'   \describe{
+#'     \item{weight}{Numeric. Log-normalised corpus frequency weight in the
+#'       range 0.5--3.0. Used in weighted scoring via
+#'       \code{\link{mixology_sentiment}}.}
+#'     \item{freq_corpus}{Integer. Raw token frequency in the reference
+#'       corpus.}
+#'   }
+#'
 #' @examples
-#' get_lexicon("bing")
+#' # Retrieve the Mixology Covid lexicon
 #' get_lexicon("covid")
+#'
+#' # Retrieve the Bing Liu lexicon
+#' get_lexicon("bing")
+#'
+#' # Inspect positive terms sorted by corpus frequency
+#' library(dplyr)
+#' get_lexicon("covid") |>
+#'   filter(sentiment == "positive") |>
+#'   arrange(desc(freq_corpus)) |>
+#'   head(20)
+#'
+#' @seealso \code{\link{mixology_lexicon_names}}, \code{\link{mixology_sentiment}},
+#'   \code{\link{lexicon_conflicts}}
 #' @export
 get_lexicon <- function(lexicon) {
   lexicon <- match.arg(lexicon, .LEXICON_NAMES)
@@ -73,11 +98,25 @@ get_lexicon <- function(lexicon) {
 }
 
 
-#' List available lexicon names
+# ── mixology_lexicon_names() ───────────────────────────────────────────────────
+
+#' List available lexicon identifiers
 #'
-#' @return A named character vector mapping short names to full labels.
+#' Returns a named character vector of the eight sentiment lexicons bundled in
+#' the Mixology package. The names are the short key strings used as the
+#' \code{lexicon} argument in other package functions; the values are the
+#' corresponding human-readable labels.
+#'
+#' @return A named character vector with eight elements.
+#'
 #' @examples
 #' mixology_lexicon_names()
+#'
+#' # Extract the keys for use in other functions
+#' names(mixology_lexicon_names())
+#'
+#' @seealso \code{\link{get_lexicon}}, \code{\link{mixology_sentiment}},
+#'   \code{\link{compare_lexicons}}
 #' @export
 mixology_lexicon_names <- function() {
   .LEXICON_LABELS
@@ -92,25 +131,48 @@ mixology_lexicon_names <- function() {
 
 #' Tokenise text for sentiment analysis
 #'
-#' Lowercases text, removes punctuation (preserving apostrophes for
-#' contractions), splits on whitespace, and optionally removes stop words.
+#' Preprocesses and tokenises a character vector of texts into a long-format
+#' tibble of unigram tokens. The pipeline lowercases text, removes punctuation
+#' while preserving apostrophes for contractions, splits on whitespace, and
+#' optionally removes stop words. The output is compatible with
+#' \code{\link{mixology_negation}} and serves as the input to
+#' \code{\link{mixology_sentiment}}.
 #'
 #' @param text Character vector. One element per document or tweet.
-#' @param remove_stopwords Logical. Remove tokens found in the bundled
-#'   stop word list. Default \code{TRUE}.
-#' @param custom_stopwords Character vector of additional stop words.
-#'   Default \code{NULL}.
-#' @param min_chars Integer. Minimum token length to retain. Default \code{2}.
+#' @param remove_stopwords Logical. If \code{TRUE} (default), tokens found in
+#'   the bundled domain-specific stop word list are removed before scoring.
+#' @param custom_stopwords Character vector of additional stop words to remove,
+#'   appended to the default list. Default \code{NULL}.
+#' @param min_chars Integer. Minimum token length in characters. Tokens shorter
+#'   than this value are excluded. Default \code{2L}.
 #'
-#' @return A tibble with columns \code{doc_id} (integer) and
-#'   \code{token} (character).
+#' @return A tibble with two columns:
+#'   \describe{
+#'     \item{doc_id}{Integer. Document identifier corresponding to the position
+#'       of the source text in the input vector.}
+#'     \item{token}{Character. The preprocessed token string.}
+#'   }
+#'
 #' @examples
-#' tweets <- c("Lockdown is not justified", "The vaccine works!")
+#' tweets <- c(
+#'   "Lockdown is not justified",
+#'   "The vaccine rollout has been excellent!"
+#' )
+#'
+#' # Default: stopwords removed
 #' mixology_tokenize(tweets)
+#'
+#' # Retain all tokens including stopwords
+#' mixology_tokenize(tweets, remove_stopwords = FALSE)
+#'
+#' # Apply additional custom stopwords
+#' mixology_tokenize(tweets, custom_stopwords = c("vaccine", "lockdown"))
+#'
 #' @importFrom stringr str_to_lower str_replace_all str_split
 #' @importFrom tibble tibble
 #' @importFrom dplyr filter
 #' @importFrom rlang .data
+#' @seealso \code{\link{mixology_negation}}, \code{\link{mixology_sentiment}}
 #' @export
 mixology_tokenize <- function(text,
                                remove_stopwords = TRUE,
@@ -141,20 +203,46 @@ mixology_tokenize <- function(text,
 
 # ── mixology_negation() ────────────────────────────────────────────────────────
 
-#' Mark tokens within a negation window
+#' Apply negation handling to a tokenised table
 #'
-#' Scans each document for negation markers and flags the next \code{window}
-#' tokens. Flagged tokens have their polarity reversed during scoring.
+#' Scans each document in a tokenised tibble for negation markers and flags
+#' the next \code{window} tokens for polarity reversal. The output adds a
+#' logical \code{negated} column which is used by \code{\link{mixology_sentiment}}
+#' to invert matched token polarities during scoring.
 #'
-#' @param tokens_tbl A tibble as returned by \code{\link{mixology_tokenize}}.
-#' @param window Integer. Tokens to mark after each negation marker.
-#'   Default \code{3}.
-#' @param custom_negations Character vector of additional negation markers.
+#' Negation is applied at the token level: flagged tokens that match a lexicon
+#' entry have their polarity reversed from positive to negative or vice versa.
+#' Ambiguous tokens are not affected by negation.
+#'
+#' @param tokens_tbl A tibble as returned by \code{\link{mixology_tokenize}},
+#'   with columns \code{doc_id} (integer) and \code{token} (character).
+#' @param window Integer. Number of tokens to flag after each negation marker.
+#'   Default \code{3L}.
+#' @param custom_negations Character vector of additional negation markers to
+#'   use alongside the default list of 22 bundled markers (e.g. \code{"not"},
+#'   \code{"never"}, \code{"can't"}). Default \code{NULL}.
 #'
 #' @return The input tibble with an added logical column \code{negated}.
+#'   Tokens within the negation window are \code{TRUE}; all others are
+#'   \code{FALSE}.
+#'
 #' @examples
-#' toks <- mixology_tokenize(c("The vaccine is not effective"))
+#' tweets <- c(
+#'   "The vaccine is not effective.",
+#'   "Lockdown measures are never justified."
+#' )
+#'
+#' # Tokenise first, then apply negation handling
+#' toks <- mixology_tokenize(tweets)
 #' mixology_negation(toks)
+#'
+#' # Wider negation window
+#' mixology_negation(toks, window = 5L)
+#'
+#' # Add custom negation markers
+#' mixology_negation(toks, custom_negations = c("hardly", "barely", "scarcely"))
+#'
+#' @seealso \code{\link{mixology_tokenize}}, \code{\link{mixology_sentiment}}
 #' @export
 mixology_negation <- function(tokens_tbl, window = 3L,
                                custom_negations = NULL) {
@@ -209,28 +297,60 @@ mixology_negation <- function(tokens_tbl, window = 3L,
 
 # ── mixology_sentiment() ───────────────────────────────────────────────────────
 
-#' Compute sentiment scores for a corpus
+#' Compute sentiment scores for a text corpus
 #'
-#' Full pipeline: tokenise → (optionally) detect negation → match against
-#' a lexicon → aggregate per document.
+#' Implements the full Mixology sentiment analysis pipeline: tokenise text,
+#' optionally apply negation detection, match tokens against a specified
+#' lexicon, and aggregate positive, negative, and ambiguous scores at the
+#' document level.
+#'
+#' When \code{weighted = TRUE} and the selected lexicon is \code{"covid"} or
+#' \code{"mixology"}, each matched token's contribution is scaled by its
+#' log-normalised corpus frequency weight (range 0.5--3.0). For general-purpose
+#' lexicons, which do not include frequency weights, this argument has no
+#' effect and scoring is always unweighted.
+#'
+#' When \code{handle_negation = TRUE}, \code{\link{mixology_negation}} is
+#' called internally before scoring. Tokens within the negation window have
+#' their polarity reversed; ambiguous tokens are not affected.
+#'
+#' Documents with no matched tokens receive \code{polarity = "none"} and
+#' zero scores across all sentiment columns.
 #'
 #' @param text Character vector. One element per document or tweet.
-#' @param lexicon Character. One of \code{"inquirer"}, \code{"subjectivity"},
-#'   \code{"bing"}, \code{"nrc"}, \code{"afinn"}, \code{"loughran"},
-#'   \code{"covid"} (default), \code{"mixology"}.
-#' @param weighted Logical. Use corpus-frequency weights (available for
-#'   \code{"covid"} and \code{"mixology"} only). Default \code{TRUE}.
-#' @param handle_negation Logical. Reverse polarity within a negation window.
-#'   Default \code{FALSE}.
-#' @param negation_window Integer. Window size. Default \code{3}.
-#' @param remove_stopwords Logical. Default \code{TRUE}.
-#' @param custom_stopwords Character vector. Default \code{NULL}.
-#' @param custom_negations Character vector. Default \code{NULL}.
+#' @param lexicon Character. Lexicon key. One of \code{"inquirer"},
+#'   \code{"subjectivity"}, \code{"bing"}, \code{"nrc"}, \code{"afinn"},
+#'   \code{"loughran"}, \code{"covid"} (default), or \code{"mixology"}.
+#'   Use \code{\link{mixology_lexicon_names}} to list available keys.
+#' @param weighted Logical. If \code{TRUE} (default), corpus frequency weights
+#'   are applied for the \code{"covid"} and \code{"mixology"} lexicons.
+#'   Has no effect for general-purpose lexicons, which lack frequency weights.
+#' @param handle_negation Logical. If \code{TRUE}, polarity reversal is applied
+#'   within a sliding window following negation markers. Default \code{FALSE}.
+#' @param negation_window Integer. Width of the negation sliding window in
+#'   tokens. Default \code{3L}. Only used when \code{handle_negation = TRUE}.
+#' @param remove_stopwords Logical. If \code{TRUE} (default), the bundled
+#'   domain-specific stop word list is applied before tokenisation.
+#' @param custom_stopwords Character vector of additional stop words.
+#'   Default \code{NULL}.
+#' @param custom_negations Character vector of additional negation markers.
+#'   Default \code{NULL}.
 #'
-#' @return A tibble with one row per document and columns:
-#'   \code{doc_id}, \code{n_tokens}, \code{n_matched}, \code{coverage},
-#'   \code{score_positive}, \code{score_negative}, \code{score_ambiguous},
-#'   \code{score_net}, \code{polarity}.
+#' @return A tibble with one row per input document and nine columns:
+#'   \describe{
+#'     \item{doc_id}{Integer. Document position in the input vector.}
+#'     \item{n_tokens}{Integer. Number of tokens after preprocessing.}
+#'     \item{n_matched}{Numeric. Number of tokens matched to the lexicon.}
+#'     \item{coverage}{Numeric. Proportion of tokens matched (0--1).}
+#'     \item{score_positive}{Numeric. Aggregated positive sentiment score.}
+#'     \item{score_negative}{Numeric. Aggregated negative sentiment score.}
+#'     \item{score_ambiguous}{Numeric. Aggregated ambiguous sentiment score.}
+#'     \item{score_net}{Numeric. Net sentiment score
+#'       (\code{score_positive - score_negative}).}
+#'     \item{polarity}{Character. Dominant polarity classification:
+#'       \code{"positive"}, \code{"negative"}, \code{"ambiguous"}, or
+#'       \code{"none"} (no tokens matched).}
+#'   }
 #'
 #' @examples
 #' tweets <- c(
@@ -238,12 +358,26 @@ mixology_negation <- function(tokens_tbl, window = 3L,
 #'   "The vaccine rollout has been excellent",
 #'   "I am not sure about the booster"
 #' )
+#'
+#' # Default: Mixology Covid lexicon with frequency weighting
 #' mixology_sentiment(tweets)
+#'
+#' # General-purpose lexicon, no weighting
 #' mixology_sentiment(tweets, lexicon = "bing", weighted = FALSE)
+#'
+#' # Enable negation handling
 #' mixology_sentiment(tweets, handle_negation = TRUE)
+#'
+#' # Score all tweets and inspect unclassified documents
+#' library(dplyr)
+#' mixology_sentiment(tweets, lexicon = "inquirer") |>
+#'   filter(polarity == "none")
+#'
 #' @importFrom dplyr left_join mutate group_by summarise filter if_else case_when
 #' @importFrom tibble tibble
 #' @importFrom rlang .data
+#' @seealso \code{\link{compare_lexicons}}, \code{\link{mixology_lexicon_names}},
+#'   \code{\link{get_lexicon}}, \code{\link{mixology_negation}}
 #' @export
 mixology_sentiment <- function(text,
                                 lexicon          = "covid",
@@ -304,32 +438,56 @@ mixology_sentiment <- function(text,
 
 #' Compare sentiment results across multiple lexicons
 #'
-#' Runs \code{\link{mixology_sentiment}} for each requested lexicon and
-#' returns either a corpus-level summary table or a long-format document-level
-#' tibble, making cross-lexicon comparison straightforward.
+#' Runs \code{\link{mixology_sentiment}} for each requested lexicon and returns
+#' a corpus-level summary table or a long-format document-level tibble, making
+#' cross-lexicon benchmarking straightforward. This is the primary function for
+#' replicating the benchmarking results reported in Dierickx (2026).
+#'
+#' By default, \code{weighted = FALSE} so that all eight lexicons are compared
+#' on equal terms. The two Mixology lexicons support frequency weighting; the
+#' six general-purpose lexicons do not.
 #'
 #' @param text Character vector. One element per document or tweet.
-#' @param lexicons Character vector. Subset of
-#'   \code{c("inquirer","subjectivity","bing","nrc","afinn","loughran",
-#'   "covid","mixology")}. Default: all eight.
-#' @param weighted Logical. Default \code{FALSE} so all lexicons are compared
-#'   on equal (unweighted) terms.
-#' @param handle_negation Logical. Default \code{FALSE}.
-#' @param negation_window Integer. Default \code{3}.
+#' @param lexicons Character vector. Subset of the eight available lexicon keys.
+#'   Default: all eight, as returned by \code{\link{mixology_lexicon_names}}.
+#' @param weighted Logical. Default \code{FALSE} for fair cross-lexicon
+#'   comparison. Set to \code{TRUE} to apply frequency weights (effective only
+#'   for \code{"covid"} and \code{"mixology"}).
+#' @param handle_negation Logical. Applied uniformly across all lexicons.
+#'   Default \code{FALSE}.
+#' @param negation_window Integer. Negation sliding window width. Default
+#'   \code{3L}.
 #' @param remove_stopwords Logical. Default \code{TRUE}.
 #' @param custom_stopwords Character vector. Default \code{NULL}.
 #' @param summary Logical. If \code{TRUE} (default), returns one row per
 #'   lexicon with corpus-level aggregates. If \code{FALSE}, returns one row
-#'   per document × lexicon.
+#'   per document per lexicon in long format.
 #'
 #' @return
-#' \code{summary = TRUE}: tibble with columns \code{lexicon},
-#'   \code{lexicon_label}, \code{n_terms}, \code{n_docs},
-#'   \code{n_matched_docs}, \code{mean_coverage}, \code{pct_positive},
-#'   \code{pct_negative}, \code{pct_ambiguous}, \code{mean_score_net}.
+#' When \code{summary = TRUE}: a tibble with one row per lexicon and ten
+#' columns:
+#'   \describe{
+#'     \item{lexicon}{Character. Lexicon key string.}
+#'     \item{lexicon_label}{Character. Human-readable lexicon name.}
+#'     \item{n_terms}{Integer. Number of terms in the lexicon.}
+#'     \item{n_docs}{Integer. Total number of input documents.}
+#'     \item{n_matched_docs}{Integer. Documents with at least one matched
+#'       token.}
+#'     \item{mean_coverage}{Numeric. Mean token coverage across all
+#'       documents.}
+#'     \item{pct_positive}{Numeric. Percentage of classified documents
+#'       assigned positive polarity.}
+#'     \item{pct_negative}{Numeric. Percentage of classified documents
+#'       assigned negative polarity.}
+#'     \item{pct_ambiguous}{Numeric. Percentage of classified documents
+#'       assigned ambiguous polarity.}
+#'     \item{mean_score_net}{Numeric. Mean net sentiment score across all
+#'       documents.}
+#'   }
 #'
-#' \code{summary = FALSE}: all columns from \code{\link{mixology_sentiment}}
-#'   plus \code{lexicon} and \code{lexicon_label}.
+#' When \code{summary = FALSE}: all columns from
+#' \code{\link{mixology_sentiment}} plus \code{lexicon} and
+#' \code{lexicon_label}.
 #'
 #' @examples
 #' tweets <- c(
@@ -337,10 +495,20 @@ mixology_sentiment <- function(text,
 #'   "The vaccine rollout has been excellent",
 #'   "I am not sure about the restrictions"
 #' )
+#'
+#' # Full benchmark across all eight lexicons
 #' compare_lexicons(tweets)
-#' compare_lexicons(tweets, lexicons = c("bing", "nrc", "covid"), summary = FALSE)
+#'
+#' # Subset of lexicons
+#' compare_lexicons(tweets, lexicons = c("bing", "nrc", "covid"))
+#'
+#' # Per-document long format
+#' compare_lexicons(tweets, lexicons = c("covid", "bing"), summary = FALSE)
+#'
 #' @importFrom dplyr bind_rows mutate group_by summarise select
 #' @importFrom rlang .data
+#' @seealso \code{\link{mixology_sentiment}}, \code{\link{lexicon_coverage}},
+#'   \code{\link{mixology_lexicon_names}}
 #' @export
 compare_lexicons <- function(text,
                               lexicons         = .LEXICON_NAMES,
@@ -395,22 +563,50 @@ compare_lexicons <- function(text,
 
 # ── lexicon_coverage() ─────────────────────────────────────────────────────────
 
-#' Compute per-lexicon token coverage
+#' Compute token coverage for one or more lexicons
 #'
-#' Quick diagnostic: returns the proportion of corpus tokens (after stop word
-#' removal) found in each lexicon, without full sentiment scoring.
+#' A lightweight diagnostic that returns the proportion of corpus tokens
+#' matched by each specified lexicon, without full sentiment scoring. Useful
+#' for quickly assessing lexical observability before running a full analysis.
 #'
-#' @param text Character vector.
-#' @param lexicons Character vector. Default: all eight.
-#' @param remove_stopwords Logical. Default \code{TRUE}.
-#' @param custom_stopwords Character vector. Default \code{NULL}.
+#' @param text Character vector. One element per document or tweet.
+#' @param lexicons Character vector of lexicon keys. Accepts one or more keys
+#'   from \code{\link{mixology_lexicon_names}}. Default: all eight lexicons.
+#' @param remove_stopwords Logical. If \code{TRUE} (default), stop words are
+#'   removed before computing coverage, matching the behaviour of
+#'   \code{\link{mixology_sentiment}}.
+#' @param custom_stopwords Character vector of additional stop words.
+#'   Default \code{NULL}.
 #'
-#' @return A tibble with columns \code{lexicon}, \code{lexicon_label},
-#'   \code{n_terms}, \code{n_tokens}, \code{n_matched}, \code{coverage}.
+#' @return A tibble with one row per lexicon and six columns:
+#'   \describe{
+#'     \item{lexicon}{Character. Lexicon key string.}
+#'     \item{lexicon_label}{Character. Human-readable lexicon name.}
+#'     \item{n_terms}{Integer. Number of terms in the lexicon.}
+#'     \item{n_tokens}{Integer. Total number of tokens across all documents
+#'       after preprocessing.}
+#'     \item{n_matched}{Integer. Number of tokens found in the lexicon.}
+#'     \item{coverage}{Numeric. Proportion of tokens matched (0--1).}
+#'   }
+#'
 #' @examples
-#' lexicon_coverage(c("Lockdown is terrible", "The vaccine is great"))
+#' tweets <- c(
+#'   "The lockdown is terrible and unjustified",
+#'   "The vaccine rollout has been excellent"
+#' )
+#'
+#' # Coverage for a single lexicon
+#' lexicon_coverage(tweets, lexicons = "covid")
+#'
+#' # Coverage across multiple lexicons
+#' lexicon_coverage(tweets, lexicons = c("covid", "mixology", "bing", "nrc"))
+#'
+#' # Coverage across all eight lexicons
+#' lexicon_coverage(tweets)
+#'
 #' @importFrom dplyr bind_rows
 #' @importFrom tibble tibble
+#' @seealso \code{\link{compare_lexicons}}, \code{\link{mixology_lexicon_names}}
 #' @export
 lexicon_coverage <- function(text,
                               lexicons         = .LEXICON_NAMES,
@@ -441,21 +637,48 @@ lexicon_coverage <- function(text,
 
 #' Identify terms with conflicting polarities across lexicons
 #'
-#' Returns terms that appear in at least two lexicons with different sentiment
-#' labels. Useful for quality control and understanding inter-resource
-#' disagreements.
+#' Returns a table of terms that are assigned different sentiment polarities
+#' across two or more of the specified lexicons. This function was used during
+#' the construction of the Mixology lexicons to identify conflicting entries:
+#' terms with conflicts between positive and negative assignments were
+#' recoded to ambiguous following a conservative resolution rule.
 #'
-#' @param lexicons Character vector. Default: all eight.
-#' @param min_conflict Integer. Minimum number of distinct polarities a term
-#'   must have to be included. Default \code{2}.
+#' @param lexicons Character vector of lexicon keys to compare. Default: all
+#'   eight lexicons returned by \code{\link{mixology_lexicon_names}}.
+#' @param min_conflict Integer. Minimum number of distinct polarity values a
+#'   term must have across the specified lexicons to be included in the output.
+#'   Default \code{2L} (any conflict). Set to \code{3L} to return only terms
+#'   with three or more distinct assignments.
 #'
-#' @return A tibble with one row per conflicting term, one column per lexicon
-#'   (showing each lexicon's label or \code{NA} if the term is absent), and
-#'   a \code{n_distinct} column.
+#' @return A tibble with one row per conflicting term. Columns include:
+#'   \describe{
+#'     \item{word}{Character. The conflicting term.}
+#'     \item{(lexicon keys)}{One column per specified lexicon, showing the
+#'       polarity assigned by that resource (\code{NA} if the term is absent).}
+#'     \item{n_distinct}{Integer. The number of distinct polarity values
+#'       assigned to this term across the specified lexicons.}
+#'   }
+#'   Results are sorted by descending \code{n_distinct}, then alphabetically
+#'   by \code{word}.
+#'
 #' @examples
-#' lexicon_conflicts(c("covid", "bing"))
+#' # All conflicts across all eight lexicons
+#' lexicon_conflicts()
+#'
+#' # Conflicts between a subset of lexicons
+#' lexicon_conflicts(lexicons = c("covid", "bing", "nrc"))
+#'
+#' # Only terms with three or more distinct polarity assignments
+#' lexicon_conflicts(min_conflict = 3L)
+#'
+#' # Inspect conflicts for a specific term
+#' library(dplyr)
+#' lexicon_conflicts() |>
+#'   filter(word == "positive")
+#'
 #' @importFrom dplyr full_join filter
 #' @importFrom tibble as_tibble
+#' @seealso \code{\link{get_lexicon}}, \code{\link{mixology_lexicon_names}}
 #' @export
 lexicon_conflicts <- function(lexicons     = .LEXICON_NAMES,
                                min_conflict = 2L) {
