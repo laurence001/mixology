@@ -9,7 +9,7 @@ export(compare_lexicons)
 export(lexicon_coverage)
 export(lexicon_conflicts)
 importFrom(dplyr,bind_rows,case_when,filter,full_join,group_by,if_else,
-           left_join,mutate,n,rename,select,summarise,coalesce)
+           left_join,mutate,n,select,summarise,coalesce)
 importFrom(stringr,str_replace_all,str_split,str_to_lower)
 importFrom(tibble,as_tibble,tibble)
 importFrom(rlang,.data)

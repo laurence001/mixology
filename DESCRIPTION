@@ -1,17 +1,21 @@
 Package: mixology
-Title: Sentiment Analysis Lexicons and Tools for Covid-19 Crisis Communication
-Version: 0.2.0
+Title: Sentiment Analysis Lexicons and Tools for Crisis Communication Research
+Version: 0.3.0
 Authors@R: 
-    person("Laurence", "Dierickx", email = "hello@ohmybox.info", role = c("aut", "cre"))
-Description: Provides eight sentiment lexicons for comparative opinion mining,
-    including two manually annotated lexicons developed for the Mixology research
-    project (Covid-19 crisis, Western Europe, December 2021) and six harmonised
-    general-purpose English sentiment dictionaries: General Inquirer, MPQA
-    Subjectivity Lexicon, Bing Liu, NRC Emotion Lexicon, AFINN, and
-    Loughran-McDonald. All lexicons share a common three-category polarity scheme
-    (positive, negative, ambiguous). Also includes a custom stop words list and
-    negation markers. Provides functions for tokenisation, negation-aware scoring,
-    and weighted comparative sentiment analysis.
+    person("Laurence", "Dierickx", email = "hello@ohmybox.info", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0000-0000-0000"))
+Description: Provides eight sentiment lexicons and a reproducible analytical
+    pipeline for comparative opinion mining in crisis communication research.
+    Includes two manually annotated domain-specific lexicons developed for the
+    Mixology project (Covid-19 political measures, Western Europe, December 2021)
+    and six harmonised general-purpose English sentiment dictionaries: General
+    Inquirer, MPQA Subjectivity Lexicon, Bing Liu, NRC Emotion Lexicon, AFINN,
+    and Loughran-McDonald. All lexicons share a common three-category polarity
+    scheme (positive, negative, ambiguous), enabling direct cross-lexicon
+    comparison. Also includes a domain-specific stop word list, negation markers,
+    and functions for tokenisation, negation-aware scoring, weighted sentiment
+    analysis, coverage diagnostics, and polarity conflict detection. Companion
+    package to Dierickx (2026) <doi:10.XXXX/XXXXXX>.
 License: CC BY 4.0 + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -20,7 +24,6 @@ Depends:
     R (>= 4.0.0)
 Imports:
     dplyr (>= 1.0.0),
-    tidytext (>= 0.3.0),
     stringr (>= 1.4.0),
     tibble (>= 3.0.0),
     rlang (>= 0.4.0)
