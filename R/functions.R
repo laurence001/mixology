@@ -265,7 +265,7 @@ mixology_negation <- function(tokens_tbl, window = 3L,
     d$negated <- negated
     d
   })
-  do.call(rbind, result)
+  dplyr::bind_rows(result)
 }
 
 
