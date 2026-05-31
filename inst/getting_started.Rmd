@@ -15,11 +15,10 @@ library(dplyr)
 
 ## Overview
 
-The `mixology` package provides eight sentiment lexicons for comparative
-opinion mining, two of which were developed specifically for Covid-19
-crisis communication research. All lexicons share a common three-category
-polarity scheme — **positive**, **negative**, **ambiguous** — making
-cross-lexicon comparison straightforward.
+The `mixology` package provides eight sentiment lexicons and a reproducible
+analytical pipeline for comparative opinion mining in crisis communication
+research. It is the companion package to Dierickx (2026), *Wrong dictionary,
+wrong answer? A domain-adapted lexicon framework for crisis sentiment analysis*.
 
 | Short name | Full name | Terms |
 |---|---|---|
@@ -175,13 +174,13 @@ Find terms that carry different polarities across lexicons:
 
 ```{r}
 # Conflicts between the Covid lexicon and Bing
-conflicts <- lexicon_conflicts(c("covid", "bing"))
+conflicts <- lexicon_conflicts(lexicons = c("covid", "bing"))
 head(conflicts, 15)
 ```
 
 ```{r eval=FALSE}
 # All eight lexicons — terms with 3+ distinct polarities
-lexicon_conflicts() |> filter(n_distinct >= 3)
+lexicon_conflicts(min_conflict = 3L)
 ```
 
 These conflicts are informative: they reveal where domain-specific
