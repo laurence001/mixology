@@ -3,7 +3,7 @@ Title: Sentiment Analysis Lexicons and Tools for Crisis Communication Research
 Version: 0.3.0
 Authors@R: 
     person("Laurence", "Dierickx", email = "hello@ohmybox.info", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0000-0000-0000"))
+           comment = c(ORCID = "0000-0001-5926-8720"))
 Description: Provides eight sentiment lexicons and a reproducible analytical
     pipeline for comparative opinion mining in crisis communication research.
     Includes two manually annotated domain-specific lexicons developed for the
