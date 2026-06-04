@@ -2199,7 +2199,7 @@ cancer,Negative,1.431,16
 cancerous,Negative,0.5,0
 cancers,Negative,0.5,0
 cane,Negative,0.5,0
-can�t,Negative,0.5,0
+cant,Negative,0.5,0
 canker,Negative,0.5,0
 cannabis,Negative,0.728,1
 cannibal,Negative,0.5,0
@@ -3932,7 +3932,7 @@ doddering,Negative,0.5,0
 dodgey,Negative,0.5,0
 dodging,Negative,0.5,0
 dodgy,Negative,1.029,4
-doesn�t,Negative,0.5,0
+doesnt,Negative,0.5,0
 dog,Negative,0.728,1
 dogma,Negative,0.5,0
 dogmatic,Negative,0.5,0
@@ -3950,7 +3950,7 @@ domination,Negative,0.5,0
 domineer,Negative,0.5,0
 domineering,Negative,0.5,0
 dominion,Negative,0.5,0
-don�t,Negative,0.5,0
+dont,Negative,0.5,0
 donkey,Negative,0.728,1
 donside,Negative,0.5,0
 dont,Negative,0.5,0
@@ -7042,7 +7042,7 @@ n00b,Negative,0.5,0
 nadir,Negative,0.5,0
 nag,Negative,0.5,0
 nagging,Negative,0.5,0
-na�ve,Negative,0.5,0
+nave,Negative,0.5,0
 naive,Negative,0.5,0
 naively,Negative,0.5,0
 nameless,Negative,0.5,0
@@ -10726,7 +10726,7 @@ woefully,Negative,0.5,0
 wolves,Negative,0.5,0
 womanizer,Negative,0.5,0
 womanizing,Negative,0.5,0
-won�t,Negative,0.5,0
+wont,Negative,0.5,0
 wont,Negative,0.5,0
 won't,Negative,1.975,88
 woodsharp,Negative,0.5,0
@@ -16535,7 +16535,7 @@ months,Ambiguous,1,0
 names,Ambiguous,1,0
 age,Ambiguous,1,0
 f489,Ambiguous,1,0
-i’ll,Ambiguous,1,0
+i'll,Ambiguous,1,0
 multiple,Ambiguous,1,0
 recently,Ambiguous,1,0
 walkin,Ambiguous,1,0
@@ -16551,14 +16551,14 @@ fees,Ambiguous,1,0
 hall,Ambiguous,1,0
 heavyweight,Ambiguous,1,0
 italy,Ambiguous,1,0
-i’ve,Ambiguous,1,0
+i've,Ambiguous,1,0
 photo,Ambiguous,1,0
 post,Ambiguous,1,0
 smiley,Ambiguous,1,0
 table,Ambiguous,1,0
 talking,Ambiguous,1,0
 tha,Ambiguous,1,0
-there’s,Ambiguous,1,0
+there's,Ambiguous,1,0
 todays,Ambiguous,1,0
 vaccinatie,Ambiguous,1,0
 wind,Ambiguous,1,0
@@ -16684,7 +16684,7 @@ dogsoftwittter,Positive,1,0
 durham,Positive,1,0
 flattened,Positive,1,0
 hesitancy,Positive,1,0
-icu.i’m,Positive,1,0
+icu.i'm,Positive,1,0
 introvert,Positive,1,0
 jek,Positive,1,0
 layla,Positive,1,0
