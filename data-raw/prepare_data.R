@@ -40,3 +40,10 @@ save_rds(read_csv("data-raw/negative_en.csv",      col_types = "c"), "negations_
 
 message("Done. Files written to inst/data/")
 message("Now run: devtools::install() to reinstall the package.")
+
+save_rds(read_csv("data-raw/mixology_lexicon_ft.csv",
+                  col_types = "ccdi"),                            "mixology_lexicon_ft")
+save_rds(read_csv("data-raw/covid_lexicon_ft.csv",
+                  col_types = "ccdi"),                            "mixology_covid_lexicon_ft")
+
+message("Fine-tuned lexicons added.")
