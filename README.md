@@ -6,7 +6,7 @@
 [![Project Status: Active](https://img.shields.io/badge/status-active-brightgreen.svg)](https://ohmybox.info)
 <!-- badges: end -->
 
-**mixology** is an R package providing eight sentiment lexicons and helper
+**mixology** is an R package providing ten sentiment lexicons and helper
 functions for comparative opinion mining. It is based on the analysis of public
 opinion expressed on Twitter during the Covid-19 crisis, focusing on
 Western European accounts (December 2021).
@@ -30,6 +30,10 @@ harmonised from their original formats.
 | `loughran` | Loughran-McDonald | 3,917 | 354 (9.0%) | 3,250 (83.0%) | 313 (8.0%) |
 | `covid` | **Mixology Covid Lexicon** | **4,166** | **1,953 (46.9%)** | **1,924 (46.2%)** | **289 (6.9%)** |
 | `mixology` | **Mixology Lexicon** | **16,528** | **5,716 (34.6%)** | **9,655 (58.4%)** | **1,157 (7.0%)** |
+| `covid_ft` | **Mixology Covid (fine-tuned)** | **4,355** | — | — | — |
+| `mixology_ft` | **Mixology (fine-tuned)** | **16,727** | — | — | — |
+
+The **fine-tuned lexicons** (`covid_ft`, `mixology_ft`) were adapted using a gold-standard annotation of 1,000 tweets (inter-annotator κ = 0.699). Fine-tuning improved macro-F1 by +0.100 (COVID) and +0.102 (Mixology) over the originals, with the largest gains in the Ambiguous class.
 
 The **Mixology Covid Lexicon** was built by manually reviewing 4,500 frequent
 tokens from a corpus of 596,619 English tweets (Western Europe,
@@ -66,24 +70,35 @@ tweets <- c(
   "I am not sure about the booster at all"
 )
 
-# 1. Compare all eight lexicons at once
+# 1. Compare all ten lexicons at once
 compare_lexicons(tweets)
 
 # 2. Score with one lexicon
 mixology_sentiment(tweets, lexicon = "covid")
 
-# 3. Weighted + negation-aware
+# 3. Score with fine-tuned lexicon
+mixology_sentiment(tweets, lexicon = "covid_ft")
+
+# 4. Weighted + negation-aware
 mixology_sentiment(tweets,
-  lexicon         = "covid",
+  lexicon         = "covid_ft",
   weighted        = TRUE,
   handle_negation = TRUE
 )
 
-# 4. Coverage diagnostic before full analysis
+# 5. Coverage diagnostic before full analysis
 lexicon_coverage(tweets)
 
-# 5. Find terms with conflicting polarities across lexicons
+# 6. Find terms with conflicting polarities across lexicons
 lexicon_conflicts(c("covid", "bing", "nrc"))
+
+# 7. Use your own lexicon
+my_lex <- use_custom_lexicon(
+  my_data,
+  word_col      = "term",
+  sentiment_col = "polarity"
+)
+mixology_sentiment(tweets, lexicon = my_lex)
 ```
 
 ---
@@ -92,11 +107,12 @@ lexicon_conflicts(c("covid", "bing", "nrc"))
 
 | Function | Description |
 |---|---|
-| `get_lexicon(name)` | Return any of the eight lexicons as a tibble |
+| `get_lexicon(name)` | Return any of the ten lexicons as a tibble |
 | `mixology_lexicon_names()` | List available lexicon names and labels |
+| `use_custom_lexicon(data, ...)` | Prepare a user-supplied data frame as a lexicon |
 | `mixology_tokenize(text, ...)` | Tokenise; remove stop words |
 | `mixology_negation(tokens, window)` | Mark tokens within a negation window |
-| `mixology_sentiment(text, ...)` | Full pipeline: tokenise → match → score |
+| `mixology_sentiment(text, ...)` | Full pipeline: tokenise → match → score; accepts built-in keys or custom data frames |
 | `compare_lexicons(text, ...)` | Run all (or selected) lexicons; return summary or long-format results |
 | `lexicon_coverage(text, ...)` | Quick coverage diagnostic per lexicon |
 | `lexicon_conflicts(lexicons, ...)` | Terms with conflicting polarities across lexicons |
@@ -126,7 +142,7 @@ mixology/
 ├── LICENSE
 ├── README.md
 ├── R/
-│   ├── data.R              # Roxygen documentation for all 10 datasets
+│   ├── data.R              # Roxygen documentation for all 12 datasets
 │   └── functions.R         # All exported functions
 ├── data-raw/
 │   ├── prepare_data.R      # Run once to generate .rds files
@@ -138,10 +154,12 @@ mixology/
 │   ├── loughran.csv
 │   ├── mixology_covid_lexicon_v3.csv
 │   ├── mixology_lexicon_v3.csv
+│   ├── covid_lexicon_ft.csv        # Fine-tuned Covid lexicon source
+│   ├── mixology_lexicon_ft.csv     # Fine-tuned Mixology lexicon source
 │   ├── stop_words_en_v3.csv
 │   └── negative_en.csv
 └── inst/
-    ├── data/               # .rds datasets (10 files, loaded at runtime)
+    ├── data/               # .rds datasets (12 files, loaded at runtime)
     ├── getting_started.Rmd # Introductory vignette
     ├── pipeline.R          # Basic usage examples
     └── pipeline_300k.R     # Full pipeline for large corpora
@@ -161,7 +179,7 @@ file.edit(system.file("pipeline.R", package = "mixology"))
 # Full pipeline for large corpora (300k+ tweets), with:
 #   - chunk-based processing
 #   - Covid vs Mixology comparison
-#   - benchmark across all 8 lexicons
+#   - benchmark across all 10 lexicons
 #   - coverage-corrected inter-lexicon stability (simple and strict variants)
 #   - synthetic performance score
 file.edit(system.file("pipeline_300k.R", package = "mixology"))
