@@ -217,36 +217,6 @@ include the term, the suggested polarity, and a usage example from the corpus.
 
 ---
 
-## Citation
-
-If you use this package in your research, please cite the companion paper:
-
-```bibtex
-@article{dierickx2026mixology,
-  author  = {Dierickx, Laurence},
-  title   = {Wrong dictionary, wrong answer? A domain-adapted lexicon framework
-             for crisis sentiment analysis},
-  journal = {Computational Communication Research},
-  year    = {2026},
-  url     = {https://journal.computationalcommunication.org}
-}
-```
-
-To cite the package itself:
-
-```bibtex
-@misc{dierickx2026mixologypkg,
-  author  = {Dierickx, Laurence},
-  title   = {mixology: Sentiment Analysis Lexicons and Tools for Crisis
-             Communication Research},
-  year    = {2026},
-  version = {0.3.0},
-  url     = {https://github.com/laurence001/mixology}
-}
-```
-
----
-
 ## Licence
 
 Data: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) —
