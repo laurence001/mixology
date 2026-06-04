@@ -2,7 +2,8 @@
 
 .LEXICON_NAMES <- c(
   "inquirer", "subjectivity", "bing", "nrc", "afinn",
-  "loughran", "covid", "mixology"
+  "loughran", "covid", "mixology",
+  "covid_ft", "mixology_ft"
 )
 
 .LEXICON_LABELS <- c(
@@ -13,7 +14,9 @@
   afinn        = "AFINN",
   loughran     = "Loughran-McDonald",
   covid        = "Mixology Covid",
-  mixology     = "Mixology"
+  mixology     = "Mixology",
+  covid_ft     = "Mixology Covid (fine-tuned)",
+  mixology_ft  = "Mixology (fine-tuned)"
 )
 
 .LEXICON_FILES <- c(
@@ -24,7 +27,9 @@
   afinn        = "lexicon_afinn.rds",
   loughran     = "lexicon_loughran.rds",
   covid        = "mixology_covid_lexicon.rds",
-  mixology     = "mixology_lexicon.rds"
+  mixology     = "mixology_lexicon.rds",
+  covid_ft     = "mixology_covid_lexicon_ft.rds",
+  mixology_ft  = "mixology_lexicon_ft.rds"
 )
 
 .EXTRA_FILES <- c(
@@ -57,11 +62,13 @@
 #' Mixology package. Returns a tibble with polarity assignments for each term.
 #' The two Mixology lexicons additionally include corpus frequency weights.
 #'
-#' @param lexicon Character. One of the eight lexicon keys returned by
+#' @param lexicon Character. One of the ten lexicon keys returned by
 #'   \code{\link{mixology_lexicon_names}}: \code{"inquirer"},
 #'   \code{"subjectivity"}, \code{"bing"}, \code{"nrc"}, \code{"afinn"},
-#'   \code{"loughran"}, \code{"covid"} (Mixology Covid Lexicon), or
-#'   \code{"mixology"} (merged Mixology Lexicon).
+#'   \code{"loughran"}, \code{"covid"} (Mixology Covid Lexicon),
+#'   \code{"mixology"} (merged Mixology Lexicon),
+#'   \code{"covid_ft"} (fine-tuned Mixology Covid Lexicon), or
+#'   \code{"mixology_ft"} (fine-tuned Mixology Lexicon).
 #'
 #' @return A tibble. All lexicons include \code{word} (character) and
 #'   \code{sentiment} (one of \code{"positive"}, \code{"negative"}, or
@@ -93,6 +100,31 @@
 #'   \code{\link{lexicon_conflicts}}
 #' @export
 get_lexicon <- function(lexicon) {
+  lexicon <- match.arg(lexicon, .LEXICON_NAMES)
+  .load_rds(.LEXICON_FILES[lexicon])
+}
+
+
+# ── .resolve_lexicon() ─────────────────────────────────────────────────────────
+# Internal helper: resolves lexicon argument to a data frame.
+# Accepts either a key string or a user-supplied data frame.
+
+.resolve_lexicon <- function(lexicon) {
+  if (is.data.frame(lexicon)) {
+    # User-supplied lexicon: validate required columns
+    if (!all(c("word", "sentiment") %in% names(lexicon))) {
+      stop(
+        "A user-supplied lexicon must be a data frame with at least two columns:\n",
+        "  - 'word'      : character column of terms\n",
+        "  - 'sentiment' : character column with values \'positive\', \'negative\', or \'ambiguous\'\n\n",
+        "Your data frame has columns: ", paste(names(lexicon), collapse = ", "), ".\n",
+        "Use use_custom_lexicon() to prepare your data frame with the correct column names.",
+        call. = FALSE
+      )
+    }
+    return(tibble::as_tibble(lexicon))
+  }
+  # Named key string
   lexicon <- match.arg(lexicon, .LEXICON_NAMES)
   .load_rds(.LEXICON_FILES[lexicon])
 }
@@ -387,8 +419,10 @@ mixology_sentiment <- function(text,
                                 remove_stopwords = TRUE,
                                 custom_stopwords = NULL,
                                 custom_negations = NULL) {
-  lexicon <- match.arg(lexicon, .LEXICON_NAMES)
-  lex     <- get_lexicon(lexicon)
+  if (is.character(lexicon)) {
+    lexicon <- match.arg(lexicon, .LEXICON_NAMES)
+  }
+  lex <- .resolve_lexicon(lexicon)
 
   toks <- mixology_tokenize(text,
                              remove_stopwords = remove_stopwords,
@@ -699,4 +733,127 @@ lexicon_conflicts <- function(lexicons     = .LEXICON_NAMES,
   wide <- dplyr::filter(wide, .data$n_distinct >= min_conflict)
   wide <- wide[order(-wide$n_distinct, wide$word), ]
   tibble::as_tibble(wide)
+}
+
+
+# ── use_custom_lexicon() ───────────────────────────────────────────────────────
+
+#' Prepare a user-supplied lexicon for use with Mixology functions
+#'
+#' Converts a data frame containing sentiment terms into the standard format
+#' expected by \code{\link{mixology_sentiment}} and \code{\link{lexicon_coverage}}.
+#' Use this function when you want to benchmark or score text with your own
+#' domain-specific lexicon rather than one of the ten built-in resources.
+#'
+#' @param data A data frame containing at least one column of terms and one
+#'   column of sentiment labels.
+#' @param word_col Character. The name of the column in \code{data} that
+#'   contains the terms (words). The column will be renamed to \code{word}
+#'   and lowercased. Default \code{NULL}: the function will prompt you to
+#'   specify the column name if not provided.
+#' @param sentiment_col Character. The name of the column in \code{data} that
+#'   contains the sentiment labels. The column will be renamed to
+#'   \code{sentiment} and lowercased. Accepted values after lowercasing:
+#'   \code{"positive"}, \code{"negative"}, \code{"ambiguous"}.
+#'   Default \code{NULL}: the function will prompt you to specify the column
+#'   name if not provided.
+#'
+#' @return A tibble with at minimum two columns, \code{word} and
+#'   \code{sentiment}, ready to be passed as the \code{lexicon} argument to
+#'   \code{\link{mixology_sentiment}} or \code{\link{lexicon_coverage}}.
+#'   Any additional columns in \code{data} (e.g. \code{weight},
+#'   \code{freq_corpus}) are retained.
+#'
+#' @details
+#' When \code{word_col} or \code{sentiment_col} is \code{NULL}, the function
+#' prints the column names of \code{data} and asks you to specify the correct
+#' column interactively. This makes the function safe to use even when the
+#' input data frame has non-standard column names.
+#'
+#' Sentiment values are lowercased before validation. Any value other than
+#' \code{"positive"}, \code{"negative"}, or \code{"ambiguous"} will produce
+#' a warning listing the unrecognised values; those rows are retained but may
+#' not score correctly.
+#'
+#' @examples
+#' # Example: a custom lexicon with non-standard column names
+#' my_lex <- data.frame(
+#'   term    = c("excellent", "terrible", "uncertain"),
+#'   polarity = c("positive",  "negative",  "ambiguous")
+#' )
+#'
+#' # Prepare it for use with Mixology
+#' lex_ready <- use_custom_lexicon(my_lex,
+#'                                  word_col      = "term",
+#'                                  sentiment_col = "polarity")
+#'
+#' # Now score some text with your custom lexicon
+#' tweets <- c("This is excellent news", "The situation is terrible")
+#' mixology_sentiment(tweets, lexicon = lex_ready)
+#'
+#' # Coverage diagnostics with your custom lexicon
+#' lexicon_coverage(tweets, lexicons = lex_ready)
+#'
+#' @seealso \code{\link{mixology_sentiment}}, \code{\link{lexicon_coverage}},
+#'   \code{\link{mixology_lexicon_names}}
+#' @export
+use_custom_lexicon <- function(data,
+                                word_col      = NULL,
+                                sentiment_col = NULL) {
+  if (!is.data.frame(data))
+    stop("'data' must be a data frame.", call. = FALSE)
+
+  cols <- names(data)
+
+  # Prompt for word column if not provided
+  if (is.null(word_col)) {
+    message("Your data frame has the following columns:")
+    message(paste0("  ", seq_along(cols), ". ", cols, collapse = "\n"))
+    message("\nWhich column contains the terms (words)?")
+    word_col <- readline("Enter column name: ")
+    if (!nzchar(word_col)) stop("No column name provided.", call. = FALSE)
+  }
+
+  # Prompt for sentiment column if not provided
+  if (is.null(sentiment_col)) {
+    message("\nYour data frame has the following columns:")
+    message(paste0("  ", seq_along(cols), ". ", cols, collapse = "\n"))
+    message("\nWhich column contains the sentiment labels",
+            " (positive / negative / ambiguous)?")
+    sentiment_col <- readline("Enter column name: ")
+    if (!nzchar(sentiment_col)) stop("No column name provided.", call. = FALSE)
+  }
+
+  if (!word_col %in% cols)
+    stop("Column '", word_col, "' not found in data. ",
+         "Available columns: ", paste(cols, collapse = ", "), call. = FALSE)
+  if (!sentiment_col %in% cols)
+    stop("Column '", sentiment_col, "' not found in data. ",
+         "Available columns: ", paste(cols, collapse = ", "), call. = FALSE)
+
+  # Rename and normalise
+  result <- data
+  names(result)[names(result) == word_col]      <- "word"
+  names(result)[names(result) == sentiment_col] <- "sentiment"
+  result$word      <- tolower(trimws(result$word))
+  result$sentiment <- tolower(trimws(result$sentiment))
+
+  # Validate sentiment values
+  valid_vals <- c("positive", "negative", "ambiguous")
+  bad <- unique(result$sentiment[!result$sentiment %in% valid_vals])
+  if (length(bad) > 0) {
+    warning(
+      "The following sentiment values are not recognised and may not score correctly: ",
+      paste(bad, collapse = ", "), ".\n",
+      "Expected values: 'positive', 'negative', 'ambiguous'.",
+      call. = FALSE
+    )
+  }
+
+  message("Custom lexicon ready: ", nrow(result), " terms, ",
+          sum(result$sentiment == "positive"), " positive, ",
+          sum(result$sentiment == "negative"), " negative, ",
+          sum(result$sentiment == "ambiguous"), " ambiguous.")
+
+  tibble::as_tibble(result)
 }

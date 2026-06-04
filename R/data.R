@@ -205,3 +205,54 @@
 #' @source Dierickx, L. (2022). Mixology open research project.
 #'   \url{https://ohmybox.info}
 "negations_en"
+
+
+#' Mixology Covid Lexicon (fine-tuned)
+#'
+#' A fine-tuned version of the Mixology Covid Lexicon, adapted using a
+#' gold-standard annotation of 1,000 tweets. Fine-tuning was carried out in
+#' three stages: candidate term extraction via TF-IDF and PMI on misclassified
+#' tweets, manual review of candidates, and polarity correction or addition
+#' of missing terms. Compared to the original, this lexicon includes 186 new
+#' terms and 172 corrected polarity assignments, improving macro-F1 from 0.335
+#' to 0.435 against the gold standard.
+#'
+#' @format A tibble with 4,355 rows and 4 variables:
+#' \describe{
+#'   \item{word}{Character. The term (lowercased).}
+#'   \item{sentiment}{Character. \code{"positive"}, \code{"negative"},
+#'     or \code{"ambiguous"}.}
+#'   \item{weight}{Numeric. Log-normalised corpus frequency weight,
+#'     range 0.5--3.0. New terms added during fine-tuning receive 1.0.}
+#'   \item{freq_corpus}{Integer. Raw token frequency in the reference corpus.
+#'     New terms added during fine-tuning receive 0.}
+#' }
+#' @source Dierickx, L. (2026). Wrong dictionary, wrong answer? A
+#'   domain-adapted lexicon framework for crisis sentiment analysis.
+#' @seealso \code{\link{mixology_covid_lexicon}}, \code{\link{compare_lexicons}}
+"mixology_covid_lexicon_ft"
+
+
+#' Mixology Lexicon (fine-tuned)
+#'
+#' A fine-tuned version of the Mixology Lexicon, adapted using a gold-standard
+#' annotation of 1,000 tweets. Compared to the original, this lexicon includes
+#' 197 new terms and 210 corrected polarity assignments, improving macro-F1
+#' from 0.351 to 0.453 against the gold standard. The most substantial gains
+#' were in the Ambiguous class (F1: 0.043 to 0.276) and Positive class
+#' (F1: 0.353 to 0.434).
+#'
+#' @format A tibble with 16,727 rows and 4 variables:
+#' \describe{
+#'   \item{word}{Character. The term (lowercased).}
+#'   \item{sentiment}{Character. \code{"positive"}, \code{"negative"},
+#'     or \code{"ambiguous"}.}
+#'   \item{weight}{Numeric. Log-normalised corpus frequency weight,
+#'     range 0.5--3.0. New terms added during fine-tuning receive 1.0.}
+#'   \item{freq_corpus}{Integer. Raw token frequency in the reference corpus.
+#'     New terms added during fine-tuning receive 0.}
+#' }
+#' @source Dierickx, L. (2026). Wrong dictionary, wrong answer? A
+#'   domain-adapted lexicon framework for crisis sentiment analysis.
+#' @seealso \code{\link{mixology_lexicon}}, \code{\link{compare_lexicons}}
+"mixology_lexicon_ft"
