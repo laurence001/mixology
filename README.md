@@ -41,11 +41,6 @@ December 2021), cross-referenced against the six general-purpose dictionaries
 using bigram and trigram context. The **Mixology Lexicon** merges all seven
 resources after manual conflict resolution.
 
-Unlike general-purpose dictionaries, which carry a systematic surplus of
-negative terms, the Covid lexicon has a near-balanced distribution, reducing
-the negative bias typically observed when applying off-the-shelf resources to
-domain-specific corpora.
-
 ---
 
 ## Installation
