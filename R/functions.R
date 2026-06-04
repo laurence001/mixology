@@ -477,16 +477,18 @@ mixology_sentiment <- function(text,
 #' cross-lexicon benchmarking straightforward. This is the primary function for
 #' replicating the benchmarking results reported in Dierickx (2026).
 #'
-#' By default, \code{weighted = FALSE} so that all eight lexicons are compared
-#' on equal terms. The two Mixology lexicons support frequency weighting; the
-#' six general-purpose lexicons do not.
+#' By default, \code{weighted = FALSE} so that all ten lexicons are compared
+#' on equal terms. The four Mixology lexicons support frequency weighting
+#' (\code{"covid"}, \code{"mixology"}, \code{"covid_ft"}, \code{"mixology_ft"});
+#' the six general-purpose lexicons do not.
 #'
 #' @param text Character vector. One element per document or tweet.
-#' @param lexicons Character vector. Subset of the eight available lexicon keys.
-#'   Default: all eight, as returned by \code{\link{mixology_lexicon_names}}.
+#' @param lexicons Character vector. Subset of the ten available lexicon keys.
+#'   Default: all ten, as returned by \code{\link{mixology_lexicon_names}}.
 #' @param weighted Logical. Default \code{FALSE} for fair cross-lexicon
 #'   comparison. Set to \code{TRUE} to apply frequency weights (effective only
-#'   for \code{"covid"} and \code{"mixology"}).
+#'   for \code{"covid"}, \code{"mixology"}, \code{"covid_ft"}, and
+#'   \code{"mixology_ft"}).
 #' @param handle_negation Logical. Applied uniformly across all lexicons.
 #'   Default \code{FALSE}.
 #' @param negation_window Integer. Negation sliding window width. Default
@@ -530,8 +532,11 @@ mixology_sentiment <- function(text,
 #'   "I am not sure about the restrictions"
 #' )
 #'
-#' # Full benchmark across all eight lexicons
+#' # Full benchmark across all ten lexicons
 #' compare_lexicons(tweets)
+#'
+#' # Compare original vs fine-tuned
+#' compare_lexicons(tweets, lexicons = c("covid", "covid_ft"))
 #'
 #' # Subset of lexicons
 #' compare_lexicons(tweets, lexicons = c("bing", "nrc", "covid"))
@@ -605,7 +610,7 @@ compare_lexicons <- function(text,
 #'
 #' @param text Character vector. One element per document or tweet.
 #' @param lexicons Character vector of lexicon keys. Accepts one or more keys
-#'   from \code{\link{mixology_lexicon_names}}. Default: all eight lexicons.
+#'   from \code{\link{mixology_lexicon_names}}. Default: all ten lexicons.
 #' @param remove_stopwords Logical. If \code{TRUE} (default), stop words are
 #'   removed before computing coverage, matching the behaviour of
 #'   \code{\link{mixology_sentiment}}.
@@ -678,7 +683,7 @@ lexicon_coverage <- function(text,
 #' recoded to ambiguous following a conservative resolution rule.
 #'
 #' @param lexicons Character vector of lexicon keys to compare. Default: all
-#'   eight lexicons returned by \code{\link{mixology_lexicon_names}}.
+#'   ten lexicons returned by \code{\link{mixology_lexicon_names}}.
 #' @param min_conflict Integer. Minimum number of distinct polarity values a
 #'   term must have across the specified lexicons to be included in the output.
 #'   Default \code{2L} (any conflict). Set to \code{3L} to return only terms
@@ -696,8 +701,11 @@ lexicon_coverage <- function(text,
 #'   by \code{word}.
 #'
 #' @examples
-#' # All conflicts across all eight lexicons
+#' # All conflicts across all ten lexicons
 #' lexicon_conflicts()
+#'
+#' # Compare original vs fine-tuned to see what changed
+#' lexicon_conflicts(lexicons = c("covid", "covid_ft"))
 #'
 #' # Conflicts between a subset of lexicons
 #' lexicon_conflicts(lexicons = c("covid", "bing", "nrc"))
