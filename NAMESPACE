@@ -13,3 +13,4 @@ importFrom(dplyr,bind_rows,case_when,filter,full_join,group_by,if_else,
 importFrom(stringr,str_replace_all,str_split,str_to_lower)
 importFrom(tibble,as_tibble,tibble)
 importFrom(rlang,.data)
+export(use_custom_lexicon)
