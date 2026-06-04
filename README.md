@@ -30,8 +30,8 @@ harmonised from their original formats.
 | `loughran` | Loughran-McDonald | 3,917 | 354 (9.0%) | 3,250 (83.0%) | 313 (8.0%) |
 | `covid` | **Mixology Covid Lexicon** | **4,166** | **1,953 (46.9%)** | **1,924 (46.2%)** | **289 (6.9%)** |
 | `mixology` | **Mixology Lexicon** | **16,528** | **5,716 (34.6%)** | **9,655 (58.4%)** | **1,157 (7.0%)** |
-| `covid_ft` | **Mixology Covid (fine-tuned)** | **4,355** | — | — | — |
-| `mixology_ft` | **Mixology (fine-tuned)** | **16,727** | — | — | — |
+| `covid_ft` | **Mixology Covid (fine-tuned)** | **4,355** | **2,038 (46.8%)** | **1,878 (43.1%)** | **439 (10.1%)** |
+| `mixology_ft` | **Mixology (fine-tuned)** | **16,727** | **5,821 (34.8%)** | **9,596 (57.4%)** | **1,310 (7.8%)** |
 
 The **fine-tuned lexicons** (`covid_ft`, `mixology_ft`) were adapted using a gold-standard annotation of 1,000 tweets (inter-annotator κ = 0.699). Fine-tuning improved macro-F1 by +0.100 (COVID) and +0.102 (Mixology) over the originals, with the largest gains in the Ambiguous class.
 
