@@ -25,11 +25,11 @@ harmonised from their original formats.
 | `inquirer` | General Inquirer | 4,206 | 1,915 (45.5%) | 2,291 (54.5%) | — |
 | `subjectivity` | MPQA Subjectivity | 6,884 | 2,298 (33.4%) | 4,147 (60.2%) | 439 (6.4%) |
 | `bing` | Bing Liu | 6,783 | 2,005 (29.6%) | 4,778 (70.4%) | — |
-| `nrc` | NRC Emotion Lexicon | 6,456 | 2,772 (43.0%) | 3,601 (55.8%) | 83 (1.3%) |
+| `nrc` | NRC Emotion Lexicon | 6,456 | 2,772 (42.9%) | 3,601 (55.8%) | 83 (1.3%) |
 | `afinn` | AFINN | 2,477 | 878 (35.4%) | 1,598 (64.5%) | 1 (0.0%) |
 | `loughran` | Loughran-McDonald | 3,917 | 354 (9.0%) | 3,250 (83.0%) | 313 (8.0%) |
-| `covid` | **Mixology Covid Lexicon** | **4,166** | **1,953 (46.9%)** | **1,924 (46.2%)** | **289 (6.9%)** |
-| `mixology` | **Mixology Lexicon** | **16,528** | **5,716 (34.6%)** | **9,655 (58.4%)** | **1,157 (7.0%)** |
+| `covid` | **Mixology Covid Lexicon** | **4,166** | **1,939 (46.5%)** | **1,877 (45.1%)** | **350 (8.4%)** |
+| `mixology` | **Mixology Lexicon** | **16,528** | **5,703 (34.5%)** | **9,609 (58.1%)** | **1,216 (7.4%)** |
 
 The **Mixology Covid Lexicon** was built by manually reviewing 4,500 frequent
 tokens from a corpus of 596,619 English tweets (Western Europe,
