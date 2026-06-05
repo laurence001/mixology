@@ -236,9 +236,7 @@ If you use this package in your research, please cite the companion paper:
   author  = {Dierickx, Laurence},
   title   = {Wrong dictionary, wrong answer? A domain-adapted lexicon framework
              for crisis sentiment analysis},
-  journal = {Computational Communication Research},
   year    = {2026},
-  url     = {https://journal.computationalcommunication.org}
 }
 ```
 
