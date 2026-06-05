@@ -30,17 +30,14 @@ harmonised from their original formats.
 | `loughran` | Loughran-McDonald | 3,917 | 354 (9.0%) | 3,250 (83.0%) | 313 (8.0%) |
 | `covid` | **Mixology Covid Lexicon** | **4,166** | **1,939 (46.5%)** | **1,877 (45.1%)** | **350 (8.4%)** |
 | `mixology` | **Mixology Lexicon** | **16,528** | **5,703 (34.5%)** | **9,609 (58.1%)** | **1,216 (7.4%)** |
+| `covid_ft` | **Mixology Covid (fine-tuned)** | **4,355** | **2,038 (46.8%)** | **1,878 (43.1%)** | **439 (10.1%)** |
+| `mixology_ft` | **Mixology (fine-tuned)** | **16,727** | **5,821 (34.8%)** | **9,596 (57.4%)** | **1,310 (7.8%)** |
 
 The **Mixology Covid Lexicon** was built by manually reviewing 4,500 frequent
 tokens from a corpus of 596,619 English tweets (Western Europe,
 December 2021), cross-referenced against the six general-purpose dictionaries
 using bigram and trigram context. The **Mixology Lexicon** merges all seven
 resources after manual conflict resolution.
-
-Unlike general-purpose dictionaries, which carry a systematic surplus of
-negative terms, the Covid lexicon has a near-balanced distribution, reducing
-the negative bias typically observed when applying off-the-shelf resources to
-domain-specific corpora.
 
 ---
 
