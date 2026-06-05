@@ -41,6 +41,11 @@ December 2021), cross-referenced against the six general-purpose dictionaries
 using bigram and trigram context. The **Mixology Lexicon** merges all seven
 resources after manual conflict resolution.
 
+Unlike general-purpose dictionaries, which carry a systematic surplus of
+negative terms, the Covid lexicon has a near-balanced distribution, reducing
+the negative bias typically observed when applying off-the-shelf resources to
+domain-specific corpora.
+
 ---
 
 ## Installation
@@ -162,23 +167,28 @@ mixology/
 
 ---
 
-## R pipelines
+## R pipeline
 
-Two ready-to-use R scripts are bundled with the package and can be opened
+A single ready-to-use R pipeline is bundled with the package and can be opened
 directly from RStudio:
 
 ```r
-# Basic usage and function examples
 file.edit(system.file("pipeline.R", package = "mixology"))
-
-# Full pipeline for large corpora (300k+ tweets), with:
-#   - chunk-based processing
-#   - Covid vs Mixology comparison
-#   - benchmark across all 10 lexicons
-#   - coverage-corrected inter-lexicon stability (simple and strict variants)
-#   - synthetic performance score
-file.edit(system.file("pipeline_300k.R", package = "mixology"))
 ```
+
+The pipeline covers the full analytical workflow:
+
+- Tokenisation and preprocessing (`mixology_tokenize`, `mixology_negation`)
+- Token coverage diagnostic across all ten lexicons
+- Sentiment scoring: all ten lexicons, with original vs fine-tuned comparison
+- Custom lexicon benchmarking via `use_custom_lexicon()`
+- Comparative evaluation: classification rate, negative bias, inter-lexicon
+  stability (coverage-corrected), synthetic performance score
+- Six `ggplot2` visualisations
+- Export to CSV
+
+The pipeline uses chunk-based processing and is suitable for corpora of any
+size.
 
 ---
 
